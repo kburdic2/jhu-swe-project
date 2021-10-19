@@ -1,28 +1,38 @@
-#userInterface {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto;
-  position: absolute;
-}
-
-img.background {
-  float: left;
-  height: 150px;
-  width: 520px;
-  box-shadow: rgba(0,0,0,0.14902) 0px 1px 1px 0px,rgba(0,0,0,0.09804) 0px 1px 2px 0px;
-  opacity: 0.7;
-}
-
 body {
     font-family: Helvetica;
     background: url("assets/Background.png");
     background-size:cover;
  }
 
- img.title {
-   float: left;
-   height: 150px;
-   width: 50px;
-   opacity: 0.8;
- }
+ #title {
+  z-index: 4;
+  height: 340px;
+  width: 873px;
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: url("assets/WheelofJeopardyTitle.png");
+}
 
+#username {
+  z-index: 2;
+  height: 155px;
+  width: 473px;
+  position: absolute;
+  top: 85%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: url("assets/UsernameTextEntry.png");
+}
+
+#connect {
+  z-index: 2;
+  height: 55px;
+  width: 263px;
+  position: absolute;
+  top: 85%;
+  left: 80%;
+  transform: translate(-50%, -50%);
+  background: url("assets/ConnectButton.png");
+}
