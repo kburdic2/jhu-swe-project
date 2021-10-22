@@ -1,38 +1,208 @@
+/* Background */
 body {
     font-family: Helvetica;
     background: url("assets/Background.png");
     background-size:cover;
  }
+ 
+ /* Always visible elements */
+ .title {
+   z-index: 2;
+   position: absolute;
+   top: 15%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+ }
 
- #title {
-  z-index: 4;
-  height: 340px;
-  width: 873px;
+ .wheel {
+   z-index: 2;
+   position: absolute;
+   top: 38%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+ }
+
+ /* Connection Screen Elements */
+#connect_screen {
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  position: absolute;
+}
+
+.username {
+  z-index: 2;
+  position: absolute;
+  top: 78%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.connectButton {
+  z-index: 2;
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+/* Lobby Screen Elements */
+.hostMenuLabel {
+  width: 500px;
+  height: 50px;
   position: absolute;
   top: 30%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: url("assets/WheelofJeopardyTitle.png");
+  left: 75.5%;
+  color:orangered;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 3rem;
 }
 
-#username {
+.numberOfQuestions {
   z-index: 2;
-  height: 155px;
-  width: 473px;
   position: absolute;
-  top: 85%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: url("assets/UsernameTextEntry.png");
-}
-
-#connect {
-  z-index: 2;
-  height: 55px;
-  width: 263px;
-  position: absolute;
-  top: 85%;
+  top: 45%;
   left: 80%;
   transform: translate(-50%, -50%);
-  background: url("assets/ConnectButton.png");
+}
+
+.playButton {
+  z-index: 2;
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+/* Player Information */
+.player1Icon {
+  width: 200px;
+  height: 200px;
+  z-index: 2;
+  position: absolute;
+  top: 15%;
+  left: 6%;
+  transform: translate(-50%, -50%);
+}
+
+.player2Icon {
+  width: 150px;
+  height: 150px;
+  z-index: 2;
+  position: absolute;
+  top: 30%;
+  left: 5%;
+  transform: translate(-50%, -50%);
+}
+
+.player3Icon {
+  width: 150px;
+  height: 150px;
+  z-index: 2;
+  position: absolute;
+  top: 43%;
+  left: 5%;
+  transform: translate(-50%, -50%);
+}
+
+.player1Name {
+  width: 300px;
+  height: 50px;
+  position: absolute;
+  top: 12%;
+  left: 11%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 2.5rem;
+}
+
+.player1Points {
+  width: 300px;
+  height: 50px;
+  position: absolute;
+  top: 15%;
+  left: 11%;
+  color:green;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 2rem;
+}
+
+.player2Name {
+  width: 300px;
+  height: 50px;
+  position: absolute;
+  top: 27%;
+  left: 9%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 2rem;
+}
+
+.player2Points {
+  width: 300px;
+  height: 50px;
+  position: absolute;
+  top: 29.5%;
+  left: 9%;
+  color:green;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.75rem;
+}
+
+.player3Name {
+  width: 300px;
+  height: 50px;
+  position: absolute;
+  top: 40%;
+  left: 9%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 2rem;
+}
+
+.player3Points {
+  width: 300px;
+  height: 50px;
+  position: absolute;
+  top: 42.5%;
+  left: 9%;
+  color:green;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.75rem;
+}
+
+/* Spin Screen Elements */
+.spinButton {
+  z-index: 2;
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+.questionsLeft {
+  width: 474px;
+  height: 144px;
+  z-index: 2;
+  position: absolute;
+  top: 6%;
+  left: 90%;
+  transform: translate(-50%, -50%);
+}
+
+/* Wheel Spinning Elements */
+.blur {
+  animation: blur 10s;
+}
+
+@keyframes blur {
+  0% {
+    filter: blur(1.5px);
+  }
+  80% {
+    filter: blur(1.5px);
+  }
+  100% {
+    filter: blur(0px);
+  }
 }

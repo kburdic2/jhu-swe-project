@@ -3,25 +3,35 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <style>
-      .title
-      {
-        position: absolute;
-        top: 60px;
-        left: 80px;
-        z-index: 2;
-      }
-    </style>
   </head>
   <body>
-    <div id="connect">
-      <img src="userinterface/assets/ConnectButton.png">
+    <div id="alwaysVisible">
+      <img class="title" id="title" src="assets/WheelofJeopardyTitle.png" />
+      <img class="wheel" id="wheel" src="assets/Wheel.png" />
     </div>
-    <div id="title">
-      <img src="userinterface/assets/UsernameTextEntry.png">
-    </div>    
-    <div id="username">
-      <img src="userinterface/assets/WheelofJeopardyTitle.png">
+    <div id="alwaysVisibleInGame">
+      <img class="player1Icon" id="player1Icon" src="assets/PlayerIcon.png" />
+      <img class="player2Icon" id="player2Icon" src="assets/PlayerIcon.png" />
+      <img class="player3Icon" id="player3Icon" src="assets/PlayerIcon.png" />
+      <div class="player1Name"><b>Username</b></div>
+      <div class="player1Points"><b>$0</b></div>
+      <div class="player2Name"><b>Username</b></div>
+      <div class="player2Points"><b>$0</b></div>
+      <div class="player3Name"><b>Username</b></div>
+      <div class="player3Points"><b>$0</b></div>
+    </div>
+    <div id="connectScreen">
+      <img class="connectButton" id="connectButton" src="assets/ConnectButton.png" />
+      <img class="username" id="username" src="assets/UsernameTextEntry.png" />
+    </div>
+    <div id="lobbyScreen">
+      <div class="hostMenuLabel"><b>Host Menu</b></div>
+      <img class="numberOfQuestions" id="numberOfQuestions" src="assets/numberOfQuestionsTextEntry.png" />
+      <img class="playButton" id="playButton" src="assets/PlayButton.png" />
+    </div>
+    <div id="spinScreen">
+      <img class="spinButton" id="spinButton" src="assets/SpintheWheelButton.png" />
+      <img class="questionsLeft" id="questionsLeft" src="assets/QuestionsRemainingDisplay.png" />
     </div>
   </body>
   <script src="script.js"></script>
