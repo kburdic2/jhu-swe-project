@@ -3,6 +3,7 @@
   var playButton = document.getElementById('playButton');
   var spinButton = document.getElementById('spinButton');
   var wheel = document.getElementById('wheel');
+  var usernameInput = document.getElementById("usernameInput");
 
   // Grouped IDs
   var alwaysVisible = document.getElementById("alwaysVisible");
@@ -25,24 +26,35 @@
 
   // Connect Button Pressed
   connectScreenButton.addEventListener('click', () => {
-    usernameInput = document.getElementById("usernameInput");
-    errorUsername = document.getElementById("errorUsername");
 
-    // Validate input
-    if (usernameInput.value.length != 0)
+    // No input
+    if (usernameInput.value.length == 0)
+    {
+      usernameInput.style.color = 'red';
+      usernameInput.value = 'Enter a Username';
+    }
+    // Username too long
+    else if (usernameInput.value.length > 20)
+    {
+      usernameInput.style.color = 'red';
+      usernameInput.value = '1-20 characters';
+    }
+    // Good, non-error-message input
+    else if (usernameInput.style.color != 'red')
     {
       username = usernameInput.value;
-      errorUsername.style.visibility = 'hidden';
       connectScreen.style.visibility = 'hidden';
       lobbyScreen.style.visibility = 'visible';
       playerList.style.visibility = 'visible';
 
       document.getElementById("player3Name").innerHTML = "<b>"+username+"</b>";
     }
-    else
-    {
-      errorUsername.style.visibility = 'visible';
-    }
+  });
+
+  // Check when the user clicks into the username box (Reset the box from error case)
+  usernameInput.addEventListener('click', () => {
+    usernameInput.style.color = 'black';
+    usernameInput.value = '';
   });
 
   // Play Button Pressed
