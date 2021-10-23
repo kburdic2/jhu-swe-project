@@ -82,11 +82,23 @@
 
   // Spin Button Pressed
   spinButton.addEventListener('click', () => {
-    connectScreen.style.visibility = 'visible';
-    lobbyScreen.style.visibility = 'hidden';
-    spinScreen.style.visibility = 'hidden';
-    playerList.style.visibility = 'hidden';
-    questionsLeft.style.visibility = 'hidden';
+    deg = Math.floor(500 + Math.random() * 500);
+    wheel.style.transition = 'all 10s ease-out';
+    wheel.style.transform = `rotate(${deg}deg)`;
+
+    spinButton.style.visibility = 'hidden';
+
+    //connectScreen.style.visibility = 'visible';
+    //lobbyScreen.style.visibility = 'hidden';
+    //spinScreen.style.visibility = 'hidden';
+    //playerList.style.visibility = 'hidden';
+    //questionsLeft.style.visibility = 'hidden';
+  });
+
+  wheel.addEventListener('transitionend', () => {
+    wheel.style.transition = 'none';
+    const actualDeg = deg % 360;
+    wheel.style.transform = `rotate(${actualDeg}deg)`;
   });
   
 })();
