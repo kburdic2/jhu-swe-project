@@ -47,6 +47,31 @@ body {
   cursor: pointer;
 }
 
+.usernameInput{
+  width: 435px;
+  height: 75px;
+  z-index: 3;
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 3rem;
+  text-align:center;
+}
+
+.errorUsername {
+  width: 500px;
+  height: 50px;
+  position: absolute;
+  top: 92.5%;
+  left: 40.5%;
+  color:red;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 3rem;
+  visibility: hidden;
+}
+
 /* Lobby Screen Elements */
 .hostMenuLabel {
   width: 500px;
@@ -74,6 +99,31 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   cursor: pointer;
+}
+
+.questionNumberInput{
+  width: 260px;
+  height: 120px;
+  z-index: 3;
+  position: absolute;
+  top: 47.5%;
+  left: 80.1%;
+  transform: translate(-50%, -50%);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 3rem;
+  text-align:center;
+}
+
+.errorQuestionNumber {
+  width: 500px;
+  height: 50px;
+  position: absolute;
+  top: 55%;
+  left: 70.75%;
+  color:red;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 3rem;
+  visibility: hidden;
 }
 
 /* Player Information */
@@ -180,7 +230,9 @@ body {
   cursor: pointer;
 }
 
-.questionsLeft {
+/* Questions Left Elements */
+
+.questionsLeftBox {
   width: 474px;
   height: 144px;
   z-index: 2;
@@ -188,6 +240,18 @@ body {
   top: 6%;
   left: 90%;
   transform: translate(-50%, -50%);
+}
+
+.questionsLeftNumber {
+  z-index: 3;
+  width: 300px;
+  height: 50px;
+  position: absolute;
+  top: 5%;
+  left: 89%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 4rem;
+  color:orangered;
 }
 
 /* Wheel Spinning Elements */

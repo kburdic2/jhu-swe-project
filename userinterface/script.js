@@ -1,37 +1,80 @@
 (function() {
-  const connectScreenButton = document.querySelector('.connectButton');
-  const playButton = document.querySelector('.playButton');
-  const spinButton = document.querySelector('.spinButton');
-  const wheel = document.querySelector('.wheel');
+  var connectScreenButton = document.getElementById('connectButton');
+  var playButton = document.getElementById('playButton');
+  var spinButton = document.getElementById('spinButton');
+  var wheel = document.getElementById('wheel');
+
+  // Grouped IDs
+  var alwaysVisible = document.getElementById("alwaysVisible");
+  var playerList = document.getElementById("playerList");
+  var connectScreen = document.getElementById("connectScreen");
+  var lobbyScreen = document.getElementById("lobbyScreen");
+  var spinScreen = document.getElementById("spinScreen");
+  var questionsLeft = document.getElementById("questionsLeft");
   
   // Initialize to connect screen
-  document.getElementById("alwaysVisible").style.visibility = 'visible';
-  document.getElementById("connectScreen").style.visibility = 'visible';
-  document.getElementById("alwaysVisibleInGame").style.visibility = 'hidden';
-  document.getElementById("lobbyScreen").style.visibility = 'hidden';
-  document.getElementById("spinScreen").style.visibility = 'hidden';
+  alwaysVisible.style.visibility = 'visible';
+  connectScreen.style.visibility = 'visible';
+  playerList.style.visibility = 'hidden';
+  lobbyScreen.style.visibility = 'hidden';
+  spinScreen.style.visibility = 'hidden';
+  questionsLeft.style.visibility = 'hidden';
+
+  var username = "";
+  var numQuestions = 0;
 
   // Connect Button Pressed
   connectScreenButton.addEventListener('click', () => {
-    document.getElementById("connectScreen").style.visibility = 'hidden';
-    document.getElementById("lobbyScreen").style.visibility = 'visible';
-    document.getElementById("alwaysVisibleInGame").style.visibility = 'visible';
+    usernameInput = document.getElementById("usernameInput");
+    errorUsername = document.getElementById("errorUsername");
+
+    // Validate input
+    if (usernameInput.value.length != 0)
+    {
+      username = usernameInput.value;
+      errorUsername.style.visibility = 'hidden';
+      connectScreen.style.visibility = 'hidden';
+      lobbyScreen.style.visibility = 'visible';
+      playerList.style.visibility = 'visible';
+
+      document.getElementById("player3Name").innerHTML = "<b>"+username+"</b>";
+    }
+    else
+    {
+      errorUsername.style.visibility = 'visible';
+    }
   });
 
   // Play Button Pressed
   playButton.addEventListener('click', () => {
-    document.getElementById("lobbyScreen").style.visibility = 'hidden';
-    document.getElementById("spinScreen").style.visibility = 'visible';
-    document.getElementById("alwaysVisibleInGame").style.visibility = 'visible';
+    questionNumberInput = document.getElementById("questionNumberInput");
+    errorQuestionNumber = document.getElementById("errorQuestionNumber");
+
+    // Validate input
+    if (questionNumberInput.value > 0 && questionNumberInput.value <= 30)
+    {
+      numQuestions = questionNumberInput.value;
+      errorQuestionNumber.style.visibility = "hidden";
+      lobbyScreen.style.visibility = 'hidden';
+      spinScreen.style.visibility = 'visible';
+      playerList.style.visibility = 'visible';
+      questionsLeft.style.visibility = 'visible';
+
+      document.getElementById("questionsLeftNumber").innerHTML = "<b>"+numQuestions+"</b>";
+    }
+    else
+    {
+      errorQuestionNumber.style.visibility = "visible";
+    }
   });
 
   // Spin Button Pressed
   spinButton.addEventListener('click', () => {
-    document.getElementById("connectScreen").style.visibility = 'visible';
-    document.getElementById("alwaysVisibleInGame").style.visibility = 'visible';
-    document.getElementById("lobbyScreen").style.visibility = 'hidden';
-    document.getElementById("spinScreen").style.visibility = 'hidden';
-    document.getElementById("alwaysVisibleInGame").style.visibility = 'hidden';
+    connectScreen.style.visibility = 'visible';
+    lobbyScreen.style.visibility = 'hidden';
+    spinScreen.style.visibility = 'hidden';
+    playerList.style.visibility = 'hidden';
+    questionsLeft.style.visibility = 'hidden';
   });
   
 })();
