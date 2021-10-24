@@ -3,6 +3,7 @@
   var playButton = document.getElementById('playButton');
   var spinButton = document.getElementById('spinButton');
   var wheel = document.getElementById('wheel');
+  const categoryDisplay = document.getElementById('categoryDisplay');
   var usernameInput = document.getElementById("usernameInput");
 
   // Grouped IDs
@@ -21,8 +22,38 @@
   spinScreen.style.visibility = 'hidden';
   questionsLeft.style.visibility = 'hidden';
 
+  // User Input variables
   var username = "";
   var numQuestions = 0;
+
+  // Wheel variables
+  let deg = 0;
+  let zoneSize = 60;
+
+  // Determine the category the wheel landed on
+  const findCategory = (actualDeg) => {
+    let category = '';
+    if ((actualDeg < 30) || (actualDeg >= 330)) {
+      category = "Green";
+    }
+    if ((actualDeg >= 30) && (actualDeg < 90)){
+      category = "Yellow";
+    }
+    if ((actualDeg >= 90) && (actualDeg < 150)){
+      category = "Orange";
+    }
+    if ((actualDeg >= 150) && (actualDeg < 210)){
+      category = "Red";
+    }
+    if ((actualDeg >= 210) && (actualDeg < 270)){
+      category = "Purple";
+    }
+    if ((actualDeg >= 270) && (actualDeg < 330)){
+      category = "Blue";
+    }
+
+    categoryDisplay.innerHTML = category;
+  }
 
   // Connect Button Pressed
   connectScreenButton.addEventListener('click', () => {
@@ -37,7 +68,7 @@
     else if (usernameInput.value.length > 20)
     {
       usernameInput.style.color = 'red';
-      usernameInput.value = '1-20 characters';
+      usernameInput.value = 'Name too long';
     }
     // Good, non-error-message input
     else if (usernameInput.style.color != 'red')
@@ -82,23 +113,25 @@
 
   // Spin Button Pressed
   spinButton.addEventListener('click', () => {
-    deg = Math.floor(500 + Math.random() * 500);
+    categoryDisplay.innerHTML = "-";
+    let spin_var = 0;
+    let min = Math.ceil(100);
+    let max = Math.floor(5000);
+    spin_var = Math.floor(Math.random() * (max - min) + min);
+    deg = Math.floor(spin_var + Math.random() * spin_var);
     wheel.style.transition = 'all 10s ease-out';
     wheel.style.transform = `rotate(${deg}deg)`;
-
+    wheel.classList.add('blur');
     spinButton.style.visibility = 'hidden';
-
-    //connectScreen.style.visibility = 'visible';
-    //lobbyScreen.style.visibility = 'hidden';
-    //spinScreen.style.visibility = 'hidden';
-    //playerList.style.visibility = 'hidden';
-    //questionsLeft.style.visibility = 'hidden';
   });
 
+  // Handle Wheel Spinning
   wheel.addEventListener('transitionend', () => {
+    wheel.classList.remove('blur');
     wheel.style.transition = 'none';
-    const actualDeg = deg % 360;
+    const actualDeg = (deg % 360);
     wheel.style.transform = `rotate(${actualDeg}deg)`;
+    findCategory(actualDeg);
   });
   
 })();
