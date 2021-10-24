@@ -132,6 +132,7 @@
     const actualDeg = (deg % 360);
     wheel.style.transform = `rotate(${actualDeg}deg)`;
     findCategory(actualDeg);
+    spinButton.style.visibility = 'visible';
   });
   
 })();
