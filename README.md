@@ -4,7 +4,7 @@ The Wheel of Jeopardy!
 A javascript based networked game combining Wheel of Furtune and Jeopardy! gameplay characteristics.
 
 Users:
-The game server will be hosted on a github.io page for future use and connectivity around the globe. (TODO)
+The game server will be hosted on a heroku page for future use and connectivity around the globe. (TODO)
 
 Developers:
 To host the game locally during development:
