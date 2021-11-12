@@ -7,19 +7,21 @@
   <body>
     <div id="alwaysVisible">
       <img class="title" id="title" src="assets/WheelofJeopardyTitle.png" />
-      <img class="wheel" id="wheel" src="assets/Wheel.png" />
-      <img class="wheelStopper" id="wheelStopper" src="assets/WheelStopperIcon.png" />
+      <div id="wheelOfFortune">
+        <canvas id="wheel" width="750%" height="750%"></canvas>
+        <div id="spin"></div>
+      </div>
     </div>
     <div id="playerList">
       <img class="player1Icon" id="player1Icon" src="assets/PlayerIcon.png" />
       <img class="player2Icon" id="player2Icon" src="assets/PlayerIcon.png" />
       <img class="player3Icon" id="player3Icon" src="assets/PlayerIcon.png" />
       <div class="player1Name" id="player1Name"><b>Username</b></div>
-      <div class="player1Points" id="player1Points"><b>-1</b></div>
+      <div class="player1Points" id="player1Points"><b>0</b></div>
       <div class="player2Name" id="player2Name"><b>Username</b></div>
-      <div class="player2Points" id="player2Points"><b>500</b></div>
+      <div class="player2Points" id="player2Points"><b>0</b></div>
       <div class="player3Name" id="player3Name"><b>Username</b></div>
-      <div class="player3Points" id="player3Points"><b>99999</b></div>
+      <div class="player3Points" id="player3Points"><b>0</b></div>
     </div>
     <div id="questionsLeft">
       <img class="questionsLeftBox" id="questionsLeftBox" src="assets/QuestionsRemainingDisplay.png" />
@@ -39,7 +41,6 @@
       <div class="winnerLabel" id="winnerLabel"><b></b></div>
     </div>
     <div id="spinScreen">
-      <img class="spinButton" id="spinButton" src="assets/SpintheWheelButton.png" />
       <div class="categoryDisplay" id="categoryDisplay"></div>
     </div>
     <div id="pointValueScreen">

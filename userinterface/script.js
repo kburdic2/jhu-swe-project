@@ -50,62 +50,286 @@
   var pointValue = 0;
 
   // Question Variables (Will convert to array of categories/questions)
-  var question = "This is a great question!";
-  var answer1 = "A. It sure is!";
-  var answer2 = "B. No it isn't!";
-  var answer3 = "C. Eh, it's alright";
-  var answer4 = "D. This isn't a question...";
+  var category;
+  var question;
+  var answer1;
+  var answer2;
+  var answer3;
+  var answer4;
   var correctAnswer = answer1;
 
   // Wheel variables
-  let deg = 0;
+  const initializedBank = randomize();
+  const qBank = initializedBank[0];
+  const rCate = initializedBank[1];
+  var wheelSpun = false;
+
+  const sectors = [{
+    color: "#fff000",
+    label: rCate[0]
+  },
+  {
+    color: "#00cd22",
+    label: rCate[1]
+  },
+  {
+    color: "#c84fff",
+    label: rCate[2]
+  },
+  {
+    color: "#0095fe",
+    label: rCate[3]
+  },
+  {
+    color: "#fe0000",
+    label: rCate[4]
+  },
+  {
+    color: "#fe6900",
+    label: rCate[5]
+  },
+];
+
+const rand = (m, M) => Math.random() * (M - m) + m;
+const tot = sectors.length;
+const EL_spin = document.querySelector("#spin");
+const ctx = document.querySelector("#wheel").getContext('2d');
+const dia = ctx.canvas.width;
+const rad = dia / 2;
+const PI = Math.PI;
+const TAU = 2 * PI;
+const arc = TAU / sectors.length;
+const friction = 0.991; // 0.995=soft, 0.99=mid, 0.98=hard
+let angVel = 0; // Angular velocity
+let ang = 0; // Angle in radians
+const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
 
   //-------------------------Functions-------------------------//
 
-  // Determine the category the wheel landed on
-  function findCategory(actualDeg)
-  {
-    let category = '';
-    if ((actualDeg < 30) || (actualDeg >= 330)) {
-      category = "Green";
-    }
-    if ((actualDeg >= 30) && (actualDeg < 90)){
-      category = "Yellow";
-    }
-    if ((actualDeg >= 90) && (actualDeg < 150)){
-      category = "Orange";
-    }
-    if ((actualDeg >= 150) && (actualDeg < 210)){
-      category = "Red";
-    }
-    if ((actualDeg >= 210) && (actualDeg < 270)){
-      category = "Purple";
-    }
-    if ((actualDeg >= 270) && (actualDeg < 330)){
-      category = "Blue";
+  function randomize() {
+    const questionBank = {
+        "SOUNDS LIKE TENNIS": [
+            [true, true, true, true, true],
+            [
+              'Ambrose Bierce defined it as "a temporary insanity curable by marriage"',
+              "Spot for a potential earthquake",
+              "The money you net from an investment",
+              "In blackjack it can have one of 2 different values",
+              "The operating expenses of running a business"
+            ],
+            [
+              "love",
+              "a fault",
+              "a return",
+              "ace",
+              "overhead"
+            ]
+        ],
+        "THAT'S CANADIAN ENTERTAINMENT": [
+            [true, true, true, true, true],
+            [
+              "This hip-hopper's love for Toronto is well known, & a 2018 report said about 5% of the city's annual tourism income was due to him",
+              '"You Oughta Know" this Ottawa-born singer imported Flea & Dave Navarro to play on that song',
+              'This Vancouver native lent his voice to the city\'s public transit in 2018; here\'s a sample: "Get those feet off the seat; my mom might be sitting there one day, come on"',
+              'Canadians starring on this sketch show included Eugene Levy, Catherine O\'Hara & John Candy',
+              'Eve on "Killing Eve", she considered studying journalism but went to Montreal\'s National Theatre School instead'
+            ],
+            [
+              'Drake',
+              'Alanis Morissette',
+              'Seth Rogen',
+              'SCTV (Second City TV)',
+              '(Sandra) Oh'
+            ]
+        ],
+        "TASTY BUSINESS": [
+            [true, true, true, true, true],
+            [
+              "Developer Jef Raskin loved this type of apple so much he named an Apple computer after one",
+              "BB is the stock symbol of this company that today is more into cybersecurity than devices",
+              "Makes sense: BR Standard is a fashion line from this store",
+              "Named for a green sushi condiment, this company calls itself \"the world's hottest cloud storage\"",
+              "This restaurant chain says the only ingredient it uses that's hard to pronounce is the pepper in its name"
+            ],
+            [
+              "a McIntosh",
+              "BlackBerry",
+              "Banana Republic",
+              "Wasabi",
+              "Chipotle"
+            ]
+        ],
+        "SOMEBODY WROTE THAT": [
+            [true, true, true, true, true],
+            [
+              "Melvina Young wrote the greeting card titled \"The Sisterhood\" for this company\'s \"Uplifted & Empowered\" collection",
+              "Raymond K. Price Jr. wrote the first & last words of the Nixon presidency, his first inaugural address & this last public speech",
+              "\"How Great\" is this beloved hymn that began as a Swedish poem by Carl Boberg & has been recorded by Carrie Underwood & Elvis",
+              "Lynell George wrote the album notes for \"Otis Redding Live at\" this club on the Sunset Strip & won a Grammy for the effort",
+              "Newspaper editor Francis Pharcellus Church wrote the 1897 reply to young Virginia O'Hanlon that's known by these 7 words"
+            ],
+            [
+              "Hallmark",
+              "his resignation",
+              '"How Great Thou Art"',
+              "the Whisky a Go Go",
+              "Yes, Virginia, there is a Santa Claus"
+            ]
+        ],
+        "NO MAN": [
+            [true, true, true, true, true],
+            [
+              "This Babylonian, not messing around with his \"code\": \"if a son strike his father, his hands shall be hewn off\"",
+              "Andrew Volstead gave a big \"no\" with the National this act, which enforced the 18th Amendment",
+              "On April 28, 1789 Fletcher Christian & crew said no to this captain's tough love, sending him off in a boat",
+              "In this 1944 battle named for the shape of opposing lines, U.S. General Anthony McAuliffe replied \"Nuts!\" to a demand for surrender",
+              "Dear Diary, in 1662 he was not a fan of \"A Midsummer Night\'s Dream\", \"which I had never seen before, nor shall ever again\""
+            ],
+            [
+              "Hammurabi",
+              "Prohibition",
+              "(Captain) Bligh",
+              "Battle of the Bulge",
+              "(Samuel) Pepys"
+            ]
+        ],
+        "IS AN ISLAND": [
+            [true, true, true, true, true],
+            [
+              "The Kanmon Undersea Tunnel connects Kyushu with this largest of the 4 main islands of Japan",
+              "Take in the beauty of Hanauma Bay on this island, also known for the totally awesome waves on its North Shore",
+              "One third of Earth's lava flow since 1500 is said to have come from volcanoes in this Atlantic island nation",
+              "Brunei & the 13,500-foot Mount Kinabalu are on this large island that lies on the equator",
+              "Once called Mount Victoria, Tomanivi on Viti Levu is the highest point in this nation"
+            ],
+            [
+              "Honshu",
+              "Oahu",
+              "Iceland",
+              "Borneo",
+              "Fiji"
+            ]
+        ],
+        "FIRST DAY ON THE JOB": [
+            [true, true, true, true, true],
+            [
+              "Getting used to the binoculars & keeping an eye out for rip currents are first-day tasks at this summer job",
+              "One-word title of the job seen here: on your first day, don't be nervous, remember your glissando & fingering technique",
+              "New at this gig, Neil Gorsuch embraced life on the cafeteria committee & having to open the door when someone knocks",
+              "You've just got this gig assisting the mixologists; lots of lifting, so don't hurt the body part in the job's name",
+              "You're the new court reporter, dazzle them with your fingers while you operate this intimidating machine"
+            ],
+            [
+              "a lifeguard",
+              "flautist",
+              "a Supreme Court justice",
+              "barback",
+              "stenography machine"
+            ],
+            [
+              ["a lifeguard", "a server", "a babysitter", "a golf caddy"],
+              ["flautist", "pianist", "masseuse", "manicurist"],
+              ["a Supreme Court justice", "a Congressman", "a Superintendent", "a University Dean"],
+              ["barback", "chemist", "producer", "legislator"],
+              ["stenography machine", "type writer", "computer", "tablet"]
+            ]
+        ],
+        "FACTS ABOUT ANIMALS": [
+            [true, true, true, true, true],
+            [
+              "The right or bowhead this gets tangled in fishing nets, which can stunt growth, causing the species to be shorter than its typical 52 feet",
+              "The 2-toed one of these can live up to 20 years, most of it upside down in the canopy of the rainforest",
+              "When faced with danger, certain ducks, snakes & mammals do this, also called thanatosis",
+              "The kestrel is also known as this type of hawk, after the nice little bird it's looking around for here",
+              "Sweden's only wild feline is this short-tailed cat that's able to bring down much larger animals, like reindeer & roe deer"
+            ],
+            [
+              "a whale",
+              "a sloth",
+              "play dead",
+              "sparrow hawk",
+              "lynx"
+            ],
+            [
+              ["a whale", "a giant squid", "a shark", "an octapus"],
+              ["a sloth", "a koala bear", "a bat", "an orangutan"],
+              ["play dead", "freeze", "run away", "attack"],
+              ["sparrow hawk", "finch hawk", "starling hawk", "parrot hawk"],
+              ["lynx", "bobcats", "servals", "ocelots"]
+            ]
+        ]
+    };
+    
+    let roundBank = {};
+    let roundCate = [];
+    let categories = Object.keys(questionBank);
+    const NUM_CATEGORIES_CHOSEN = 6;
+
+    for (let i = NUM_CATEGORIES_CHOSEN; i > 0; i--) {
+        let randomInt = Math.floor(Math.random() * i);
+        roundBank[categories[randomInt]] = questionBank[categories[randomInt]];
+        roundCate.push(categories[randomInt]);
+        categories.splice(randomInt, 1);
     }
 
-    categoryDisplay.innerHTML = category;
-  }
+    let returnList = [roundBank, roundCate]
+    return returnList;
+  };
 
-  function findWinner()
-  {
-    var winner = '';
-    var winnerPoints = 0;
-    for (let i = 1; i <= 3; i++)
+  function drawSector(sector, i, text) {
+    const ang = arc * i;
+    ctx.save();
+    // COLOR
+    ctx.beginPath();
+    ctx.fillStyle = sector.color;
+    ctx.moveTo(rad, rad);
+    ctx.arc(rad, rad, rad, ang, ang + arc);
+    ctx.lineTo(rad, rad);
+    ctx.fill();
+    // TEXT
+    if (text)
     {
-      var currPlayerPoints = Number(document.getElementById('player'+i+'Points').innerText);
-      if (winnerPoints == 0 || currPlayerPoints > winnerPoints)
-      {
-        winnerPoints = currPlayerPoints;
-        winner = document.getElementById('player'+i+'Name').innerText
-      }
+      ctx.translate(rad, rad);
+      ctx.rotate(ang + arc / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 20px sans-serif";
+      ctx.fillText(sector.label, rad - 10, 10);
+      ctx.restore();
     }
+  };
 
-    console.log("Winner: "+winner);
-    console.log("Points: "+winnerPoints);
-    return {winner, winnerPoints};
+  function rotate() {
+    EL_spin.textContent = "";
+    const sector = sectors[getIndex()];
+    ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
+    EL_spin.style.background = sector.color;
+    categoryDisplay.style.background = sector.color;
+    if (wheelSpun) categoryDisplay.textContent = sector.label;
+    // Wheel has stopped spinning
+    if (!angVel && wheelSpun)
+    {
+      // TO-DO: ADD 3 SECOND WAIT HERE
+      category = sector.label;
+      pointValueScreen.style.visibility = 'visible';
+      wheelSpun = false;
+    }
   }
+
+function frame() {
+    if (!angVel) return;
+    angVel *= friction; // Decrement velocity by friction
+    if (angVel < 0.002) angVel = 0; // Bring to stop
+    ang += angVel; // Update angle
+    ang %= TAU; // Normalize angle
+    rotate();
+}
+
+function engine() {
+    frame();
+    requestAnimationFrame(engine)
+}
+
 
   //-------------------------Initialization-------------------------//
 
@@ -119,6 +343,12 @@
   pointValueScreen.style.visibility = 'hidden';
   buzzInScreen.style.visibility = 'hidden';
   answerScreen.style.visibility = 'hidden';
+  for (var i = 0; i < sectors.length; i++)
+  {
+    drawSector(sectors[i], i, false);
+  }
+  rotate(); // Initial rotation
+  engine(); // Start engine
 
   //-------------------------Events-------------------------//
 
@@ -145,7 +375,7 @@
       lobbyScreen.style.visibility = 'visible';
       playerList.style.visibility = 'visible';
 
-      document.getElementById("player3Name").innerHTML = "<b>"+username+"</b>";
+      document.getElementById("player1Name").innerHTML = "<b>"+username+"</b>";
     }
   });
 
@@ -167,7 +397,11 @@
       errorQuestionNumber.style.visibility = "hidden";
       lobbyScreen.style.visibility = 'hidden';
       spinScreen.style.visibility = 'visible';
-      spinButton.style.visibility = 'visible';
+      EL_spin.textContent = "SPIN!"
+      for (var i = 0; i < sectors.length; i++)
+      {
+        drawSector(sectors[i], i, true);
+      }
       playerList.style.visibility = 'visible';
       questionsLeft.style.visibility = 'visible';
 
@@ -180,29 +414,17 @@
   });
 
   // Spin Button Pressed
-  spinButton.addEventListener('click', () => {
-    categoryDisplay.innerHTML = "";
-    let spin_var = 0;
-    let min = Math.ceil(100);
-    let max = Math.floor(5000);
-    spin_var = Math.floor(Math.random() * (max - min) + min);
-    deg = Math.floor(spin_var + Math.random() * spin_var);
-    wheel.style.transition = 'all 10s ease-out';
-    wheel.style.transform = `rotate(${deg}deg)`;
-    wheel.classList.add('blur');
-    spinButton.style.visibility = 'hidden';
-  });
-
-  // Handle Wheel Spinning
-  wheel.addEventListener('transitionend', () => {
-    wheel.classList.remove('blur');
-    wheel.style.transition = 'none';
-    const actualDeg = (deg % 360);
-    wheel.style.transform = `rotate(${actualDeg}deg)`;
-    findCategory(actualDeg);
-
-    spinScreen.style.visibility = 'hidden';
-    pointValueScreen.style.visibility = 'visible';
+  EL_spin.addEventListener('click', () => {
+    if (EL_spin.textContent == "SPIN!")
+    {
+      categoryDisplay.innerHTML = "";
+      if (!angVel)
+      {
+        wheelSpun = true;
+        angVel = rand(0.25, 0.35);
+        spinButton.style.visibility = 'hidden';
+      }
+    }
   });
 
   //----------Point Value Buttons----------//
@@ -211,8 +433,10 @@
     pointValue = 10;
     pointValueScreen.style.visibility = 'hidden';
     buzzInScreen.style.visibility = 'visible';
+    spinScreen.style.visibility = 'hidden';
     PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
     PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+    var question = qBank[categoryDisplay.textContent][1][0];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
   });
@@ -221,8 +445,10 @@
     pointValue = 20;
     pointValueScreen.style.visibility = 'hidden';
     buzzInScreen.style.visibility = 'visible';
+    spinScreen.style.visibility = 'hidden';
     PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
     PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+    var question = qBank[categoryDisplay.textContent][1][1];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
   });
@@ -231,8 +457,10 @@
     pointValue = 30;
     pointValueScreen.style.visibility = 'hidden';
     buzzInScreen.style.visibility = 'visible';
+    spinScreen.style.visibility = 'hidden';
     PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
     PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+    var question = qBank[categoryDisplay.textContent][1][2];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
   });
@@ -241,8 +469,10 @@
     pointValue = 40;
     pointValueScreen.style.visibility = 'hidden';
     buzzInScreen.style.visibility = 'visible';
+    spinScreen.style.visibility = 'hidden';
     PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
     PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+    var question = qBank[categoryDisplay.textContent][1][3];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
   });
@@ -251,8 +481,10 @@
     pointValue = 50;
     pointValueScreen.style.visibility = 'hidden';
     buzzInScreen.style.visibility = 'visible';
+    spinScreen.style.visibility = 'hidden';
     PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
     PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+    var question = qBank[categoryDisplay.textContent][1][4];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
   });
@@ -261,6 +493,7 @@
   buzzerButton.addEventListener('click', () => {
     buzzInScreen.style.visibility = 'hidden';
     answerScreen.style.visibility = 'visible';
+    spinScreen.style.visibility = 'hidden';
     answer1Text.innerHTML = answer1;
     answer2Text.innerHTML = answer2;
     answer3Text.innerHTML = answer3;
