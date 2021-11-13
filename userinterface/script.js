@@ -778,6 +778,8 @@ function engine() {
 
     qBank[category][0][(pointValue/10)-1] = false;
 
+    numQuestions = numQuestions - 1;
+
     setCurrentPlayer(1);
 
     answerTimer.innerHTML = answerTimerLength.bold();
@@ -810,7 +812,6 @@ function engine() {
 
     buzzInTimer.innerHTML = "5";
     answerTimer.style.visibility = 'hidden';
-    numQuestions = numQuestions - 1;
     setTimeout(viewCorrectAnswerTimer, 1000);
   });
   // Answer 2 Pressed
@@ -838,7 +839,6 @@ function engine() {
 
     buzzInTimer.innerHTML = "5";
     answerTimer.style.visibility = 'hidden';
-    numQuestions = numQuestions - 1;
     setTimeout(viewCorrectAnswerTimer, 1000);
   });
   // Answer 3 Pressed
@@ -866,7 +866,6 @@ function engine() {
 
     buzzInTimer.innerHTML = "5";
     answerTimer.style.visibility = 'hidden';
-    numQuestions = numQuestions - 1;
     setTimeout(viewCorrectAnswerTimer, 1000);
   });
   // Answer 4 Pressed
@@ -894,7 +893,6 @@ function engine() {
 
     buzzInTimer.innerHTML = "5";
     answerTimer.style.visibility = 'hidden';
-    numQuestions = numQuestions - 1;
     setTimeout(viewCorrectAnswerTimer, 1000);
   });
 
