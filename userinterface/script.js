@@ -53,8 +53,8 @@
   var correctAnswer;
 
   // Timer Lengths
-  const buzzInTimerLength = 9;
-  const answerTimerLength = 15;
+  const buzzInTimerLength = "9";
+  const answerTimerLength = "15";
 
   // Wheel variables
   const initializedBank = randomize();
@@ -118,6 +118,10 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     {
       setTimeout(decrementBuzzInTimer, 1000);
     }
+    else if (buzzInScreen.style.visibility == 'visible') // Timer expired on buzz in screen
+    {
+      nextQuestion();
+    }
   }
 
   function decrementQuestionTimer(){
@@ -125,6 +129,24 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     if (parseInt(answerTimer.innerText) > 0)
     {
       setTimeout(decrementQuestionTimer, 1000);
+    }
+    else if (parseInt(answerTimer.innerText) == 0 && answerScreen.style.visibility == 'visible') // Timer expired on answer screen
+    {
+      questionDisplay2.innerHTML = "Timer expired!".bold();
+      questionDisplay2.style.color = "red";
+      addPoints(-1*pointValue, 1);
+      // Display correct answer
+      for (var i = 1; i < 5; i++)
+      {
+        var currAnswer = document.getElementById("answer"+i+"Text");
+        if (currAnswer.innerHTML == correctAnswer)
+        {
+          document.getElementById("answer"+i+"Button").src = "assets/CorrectAnswerButton.png";
+          break;
+        }
+      }
+      buzzInTimer.innerHTML = "5";
+      setTimeout(viewCorrectAnswerTimer, 1000);
     }
   }
 
@@ -151,6 +173,7 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     // Go to lobby screen with winner displayed
     answerScreen.style.visibility = 'hidden';
     lobbyScreen.style.visibility = 'visible';
+    answerTimer.style.visibility = 'hidden';
     let {winner, winnerPoints} = findWinner();
     document.getElementById("winnerLabel").innerText = winner+" has won with "+winnerPoints+" points!";
     document.getElementById("playButton").src = "assets/PlayAgainButton.png";
@@ -165,7 +188,9 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
 
   function nextQuestion(){
     answerScreen.style.visibility = 'hidden';
+    buzzInScreen.style.visibility = 'hidden';
     spinScreen.style.visibility = 'visible';
+    answerTimer.style.visibility = 'hidden';
     // Reset answer buttons
     for (let i = 1; i < 5; i++)
     {
@@ -616,6 +641,7 @@ function engine() {
       var question = qBank[category][1][0];
       questionDisplay.innerHTML = "<b>"+question+"</b>";
       questionDisplay2.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.style.color = "black";
 
       var answers = qBank[category][3][0];
       correctAnswer = qBank[category][2][0];
@@ -626,7 +652,7 @@ function engine() {
       answer3Text.innerHTML = answers[2];
       answer4Text.innerHTML = answers[3];
       
-      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      buzzInTimer.innerHTML = buzzInTimerLength.bold();
       setTimeout(decrementBuzzInTimer, 1000);
     }
   });
@@ -643,6 +669,7 @@ function engine() {
       var question = qBank[category][1][1];
       questionDisplay.innerHTML = "<b>"+question+"</b>";
       questionDisplay2.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.style.color = "black";
 
       var answers = qBank[category][3][1];
       correctAnswer = qBank[category][2][1];
@@ -653,7 +680,7 @@ function engine() {
       answer3Text.innerHTML = answers[2];
       answer4Text.innerHTML = answers[3];
 
-      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      buzzInTimer.innerHTML = buzzInTimerLength.bold();
       setTimeout(decrementBuzzInTimer, 1000);
     }
   });
@@ -670,6 +697,7 @@ function engine() {
       var question = qBank[categoryDisplay.textContent][1][2];
       questionDisplay.innerHTML = "<b>"+question+"</b>";
       questionDisplay2.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.style.color = "black";
 
       var answers = qBank[category][3][2];
       correctAnswer = qBank[category][2][2];
@@ -680,7 +708,7 @@ function engine() {
       answer3Text.innerHTML = answers[2];
       answer4Text.innerHTML = answers[3];
 
-      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      buzzInTimer.innerHTML = buzzInTimerLength.bold();
       setTimeout(decrementBuzzInTimer, 1000);
     }
   });
@@ -697,6 +725,7 @@ function engine() {
       var question = qBank[categoryDisplay.textContent][1][3];
       questionDisplay.innerHTML = "<b>"+question+"</b>";
       questionDisplay2.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.style.color = "black";
 
       var answers = qBank[category][3][3];
       correctAnswer = qBank[category][2][3];
@@ -707,7 +736,7 @@ function engine() {
       answer3Text.innerHTML = answers[2];
       answer4Text.innerHTML = answers[3];
 
-      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      buzzInTimer.innerHTML = buzzInTimerLength.bold();
       setTimeout(decrementBuzzInTimer, 1000);
     }
   });
@@ -724,6 +753,7 @@ function engine() {
       var question = qBank[categoryDisplay.textContent][1][4];
       questionDisplay.innerHTML = "<b>"+question+"</b>";
       questionDisplay2.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.style.color = "black";
 
       var answers = qBank[category][3][4];
       correctAnswer = qBank[category][2][4];
@@ -734,7 +764,7 @@ function engine() {
       answer3Text.innerHTML = answers[2];
       answer4Text.innerHTML = answers[3];
       
-      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      buzzInTimer.innerHTML = buzzInTimerLength.bold();
       setTimeout(decrementBuzzInTimer, 1000);
     }
   });
@@ -744,12 +774,13 @@ function engine() {
     buzzInScreen.style.visibility = 'hidden';
     answerScreen.style.visibility = 'visible';
     spinScreen.style.visibility = 'hidden';
+    answerTimer.style.visibility = 'visible';
 
     qBank[category][0][(pointValue/10)-1] = false;
 
     setCurrentPlayer(1);
 
-    answerTimer.innerText = toString(answerTimerLength).bold();
+    answerTimer.innerHTML = answerTimerLength.bold();
     setTimeout(decrementQuestionTimer, 1000);
   });
 
