@@ -47,7 +47,6 @@ body {
 #spin {
   font: 1.5em/0 sans-serif;
   user-select: none;
-  cursor: pointer;
   display: flex;  
   justify-content: center;
   align-items: center;
@@ -64,6 +63,7 @@ body {
   white-space: nowrap;
   overflow: auto;
   overflow-wrap: break-word;
+  font-size: 1.75vw;
 }
 
 #spin::after {

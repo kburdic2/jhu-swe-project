@@ -15,13 +15,14 @@
   // Screen Elements
   var connectScreenButton = document.getElementById('connectButton');
   var playButton = document.getElementById('playButton');
-  var spinButton = document.getElementById('spinButton');
   var wheel = document.getElementById('wheel');
   const categoryDisplay = document.getElementById('categoryDisplay');
   var usernameInput = document.getElementById("usernameInput");
   var PVDisplayText = document.getElementById("PVDisplayText");
   var PVDisplayText2 = document.getElementById("PVDisplayText2");
   var buzzerButton = document.getElementById('buzzerButton');
+  var buzzInTimer = document.getElementById('buzzInTimer');
+  var answerTimer = document.getElementById('answerTimer');
   var questionDisplay = document.getElementById('questionDisplay');
   var questionDisplay2 = document.getElementById('questionDisplay2');
 
@@ -49,14 +50,11 @@
   var numQuestions = 0;
   var pointValue = 0;
 
-  // Question Variables (Will convert to array of categories/questions)
-  var category;
-  var question;
-  var answer1;
-  var answer2;
-  var answer3;
-  var answer4;
-  var correctAnswer = answer1;
+  var correctAnswer;
+
+  // Timer Lengths
+  const buzzInTimerLength = 9;
+  const answerTimerLength = 15;
 
   // Wheel variables
   const initializedBank = randomize();
@@ -106,13 +104,133 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
 
   //-------------------------Functions-------------------------//
 
+  function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+      currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+  }
+
+  function decrementBuzzInTimer(){
+    buzzInTimer.innerHTML = (parseInt(buzzInTimer.innerText) - 1).toString().bold();
+    if (parseInt(buzzInTimer.innerText) > 0)
+    {
+      setTimeout(decrementBuzzInTimer, 1000);
+    }
+  }
+
+  function decrementQuestionTimer(){
+    answerTimer.innerHTML = (parseInt(answerTimer.innerText) - 1).toString().bold();
+    if (parseInt(answerTimer.innerText) > 0)
+    {
+      setTimeout(decrementQuestionTimer, 1000);
+    }
+  }
+
+  function viewCorrectAnswerTimer(){
+    buzzInTimer.innerHTML = (parseInt(buzzInTimer.innerText) - 1).toString().bold();
+    if (parseInt(buzzInTimer.innerText) > 0)
+    {
+      setTimeout(viewCorrectAnswerTimer, 1000);
+    }
+    else
+    {
+      if (numQuestions > 0)
+      {
+        setTimeout(nextQuestion, 1000);
+      }
+      else
+      {
+        setTimeout(resetGame, 1000);
+      }
+    }
+  }
+
+  function resetGame(){
+    // Go to lobby screen with winner displayed
+    answerScreen.style.visibility = 'hidden';
+    lobbyScreen.style.visibility = 'visible';
+    let {winner, winnerPoints} = findWinner();
+    document.getElementById("winnerLabel").innerText = winner+" has won with "+winnerPoints+" points!";
+    document.getElementById("playButton").src = "assets/PlayAgainButton.png";
+    questionsLeft.style.visibility = 'hidden';
+    categoryDisplay.innerText = "";
+    // Reset answer buttons
+    for (let i = 1; i < 5; i++)
+    {
+      document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
+    }
+  }
+
+  function nextQuestion(){
+    answerScreen.style.visibility = 'hidden';
+    spinScreen.style.visibility = 'visible';
+    // Reset answer buttons
+    for (let i = 1; i < 5; i++)
+    {
+      document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
+    }
+    document.getElementById("questionsLeftNumber").innerHTML = "<b>"+numQuestions+"</b>";
+    EL_spin.innerHTML = "SPIN!".bold();
+    EL_spin.style.cursor = "pointer";
+    categoryDisplay.innerText = "";
+  }
+
+  function shuffle(a, b)
+  {
+    return Math.random() > 0.5 ? -1 : 1;
+  }
+
+  function addPoints(points, playerIndex)
+  {
+    var playerPoints = document.getElementById("player"+playerIndex+"Points");
+    playerPoints.innerHTML = (parseInt(playerPoints.innerText) + points).toString().bold();
+  }
+
+  function setCurrentPlayer(playerIndex)
+  {
+    for (var i = 1; i <= 3; i++)
+    {
+      var playerIcon = document.getElementById("player"+i+"Icon");
+      
+      if (i == playerIndex)
+      {
+        playerIcon.src = "assets/CurrentPlayerIcon.png";
+      }
+      else
+      {
+        playerIcon.src = "assets/PlayerIcon.png";
+      }
+    }    
+  }
+
+  function findWinner()
+  {
+    var winner = '';
+    var winnerPoints = 0;
+    for (let i = 1; i <= 3; i++)
+    {
+      var currPlayerPoints = Number(document.getElementById('player'+i+'Points').innerText);
+      if (winnerPoints == 0 || currPlayerPoints > winnerPoints)
+      {
+        winnerPoints = currPlayerPoints;
+        winner = document.getElementById('player'+i+'Name').innerText
+      }
+    }
+
+    console.log("Winner: "+winner);
+    console.log("Points: "+winnerPoints);
+    return {winner, winnerPoints};
+  }
+
   function randomize() {
     const questionBank = {
         "SOUNDS LIKE TENNIS": [
             [true, true, true, true, true],
             [
               'Ambrose Bierce defined it as "a temporary insanity curable by marriage"',
-              "Spot for a potential earthquake",
+              "Likely spot for a potential earthquake",
               "The money you net from an investment",
               "In blackjack it can have one of 2 different values",
               "The operating expenses of running a business"
@@ -123,6 +241,13 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
               "a return",
               "ace",
               "overhead"
+            ],
+            [
+              ["love", "hatred", "awkwardness", "shyness"],
+              ["a fault", "a slope", "a berm", "a river"],
+              ["a return", "a profit", "a gross", "a deduction"],
+              ["ace", "king", "queen", "jack"],
+              ["overhead", "payroll", "capital", "liabilities"]
             ]
         ],
         "THAT'S CANADIAN ENTERTAINMENT": [
@@ -138,8 +263,15 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
               'Drake',
               'Alanis Morissette',
               'Seth Rogen',
-              'SCTV (Second City TV)',
-              '(Sandra) Oh'
+              'Second City TV',
+              'Sandra Oh'
+            ],
+            [
+              ["Drake", "Eminem", "Kanye West", "Post Malone"],
+              ["Alanis Morissette", "Celine Dion", "Jessie Reyez", "Nelly Furtado"],
+              ["Seth Rogen", "Ryan Reynolds", "Michael J. Fox", "Michael Bublé"],
+              ["Second City TV", "SNL Québec", "SketchCom", "Super Dave"],
+              ["Sandra Oh", "Jodie Comer", "Fiona Shaw", "Gemma Whelan"]
             ]
         ],
         "TASTY BUSINESS": [
@@ -157,6 +289,13 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
               "Banana Republic",
               "Wasabi",
               "Chipotle"
+            ],
+            [
+              ["a McIntosh", "a Fuji", "a Mutsu", "an Opal"],
+              ["BlackBerry", "Bloomberg", "Best Buy", "BlueBird"],
+              ["Banana Republic", "British Royale", "Blue Ridge", "Burlington Reserve"],
+              ["Wasabi", "Shoyu", "Ichimi", "Karashi"],
+              ["Chipotle", "Banana Republic", "Bojangles", "Chili\'s"]
             ]
         ],
         "SOMEBODY WROTE THAT": [
@@ -169,11 +308,18 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
               "Newspaper editor Francis Pharcellus Church wrote the 1897 reply to young Virginia O'Hanlon that's known by these 7 words"
             ],
             [
-              "Hallmark",
+              "Hallmark Cards",
               "his resignation",
-              '"How Great Thou Art"',
+              "How Great Thou Art",
               "the Whisky a Go Go",
               "Yes, Virginia, there is a Santa Claus"
+            ],
+            [
+              ["Hallmark Cards", "American Greetings", "Quilling Cards", "Nobleworks"],
+              ["his Resignation", "his State of the Union", "his Vietnam War address", "his National Energy Policy"],
+              ["How Great Thou Art", "How Great the Spring Blooms", "How Great Our Love", "How Great Is Our God"],
+              ["the Whisky a Go Go", "Ciro\'s", "the Mocambo", "the Trocadero"],
+              ["Yes, Virginia, there is a Santa Claus", "Yes Virginia, there is an Easter Bunny", "Yes Virginia, there is a tooth fairy", "Yes Virginia, there is a Jack Frost"]
             ]
         ],
         "NO MAN": [
@@ -188,9 +334,16 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
             [
               "Hammurabi",
               "Prohibition",
-              "(Captain) Bligh",
+              "Captain Bligh",
               "Battle of the Bulge",
-              "(Samuel) Pepys"
+              "Samuel Pepys"
+            ],
+            [
+              ["Hammurabi", "Sharia", "Urukagina", "Gentoo"],
+              ["Prohibition", "Slavery", "Voter Discrimination", "Income Tax"],
+              ["Captain Bligh", "Captain Durham", "Captain Yorke", "Captain Rainier"],
+              ["Battle of the Bulge", "Battle of Mill", "Battle of the Coral Sea", "Battle of Slim River"],
+              ["Samuel Pepys", "Cyril Wyche", "John Dryden", "Hermann Ulrici"],
             ]
         ],
         "IS AN ISLAND": [
@@ -208,6 +361,13 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
               "Iceland",
               "Borneo",
               "Fiji"
+            ],
+            [
+              ["Honshu", "Hokkaido", "Shikoku", "Kyushu"],
+              ["Oahu", "Maui", "Lanai", "Kauai"],
+              ["Iceland", "Greenland", "Newfoundland", "Iwo Jima"],
+              ["Borneo", "Tarawa", "Waigeo", "Bioko"],
+              ["Fiji", "Nepal", "Peru", "Bolivia"],
             ]
         ],
         "FIRST DAY ON THE JOB": [
@@ -305,11 +465,11 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
     EL_spin.style.background = sector.color;
     categoryDisplay.style.background = sector.color;
-    if (wheelSpun) categoryDisplay.textContent = sector.label;
+    if (wheelSpun) categoryDisplay.innerHTML = sector.label.bold();
     // Wheel has stopped spinning
     if (!angVel && wheelSpun)
     {
-      // TO-DO: ADD 3 SECOND WAIT HERE
+      sleep(1000);
       category = sector.label;
       pointValueScreen.style.visibility = 'visible';
       wheelSpun = false;
@@ -397,7 +557,8 @@ function engine() {
       errorQuestionNumber.style.visibility = "hidden";
       lobbyScreen.style.visibility = 'hidden';
       spinScreen.style.visibility = 'visible';
-      EL_spin.textContent = "SPIN!"
+      EL_spin.innerHTML = "SPIN!".bold();
+      EL_spin.style.cursor = "pointer";
       for (var i = 0; i < sectors.length; i++)
       {
         drawSector(sectors[i], i, true);
@@ -422,7 +583,6 @@ function engine() {
       {
         wheelSpun = true;
         angVel = rand(0.25, 0.35);
-        spinButton.style.visibility = 'hidden';
       }
     }
   });
@@ -439,6 +599,18 @@ function engine() {
     var question = qBank[categoryDisplay.textContent][1][0];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
+
+    var answers = qBank[categoryDisplay.textContent][3][0];
+    correctAnswer = answers[0];
+    answers = answers.sort(shuffle);
+
+    answer1Text.innerHTML = answers[0];
+    answer2Text.innerHTML = answers[1];
+    answer3Text.innerHTML = answers[2];
+    answer4Text.innerHTML = answers[3];
+    
+    buzzInTimer.innerText = buzzInTimerLength;
+    setTimeout(decrementBuzzInTimer, 1000);
   });
   // PV2 Button Pressed
   PV2Button.addEventListener('click', () => {
@@ -451,6 +623,18 @@ function engine() {
     var question = qBank[categoryDisplay.textContent][1][1];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
+
+    var answers = qBank[categoryDisplay.textContent][3][1];
+    correctAnswer = answers[0];
+    answers = answers.sort(shuffle);
+
+    answer1Text.innerHTML = answers[0];
+    answer2Text.innerHTML = answers[1];
+    answer3Text.innerHTML = answers[2];
+    answer4Text.innerHTML = answers[3];
+
+    buzzInTimer.innerText = buzzInTimerLength;
+    setTimeout(decrementBuzzInTimer, 1000);
   });
   // PV3 Button Pressed
   PV3Button.addEventListener('click', () => {
@@ -463,6 +647,18 @@ function engine() {
     var question = qBank[categoryDisplay.textContent][1][2];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
+
+    var answers = qBank[categoryDisplay.textContent][3][2];
+    correctAnswer = answers[0];
+    answers = answers.sort(shuffle);
+
+    answer1Text.innerHTML = answers[0];
+    answer2Text.innerHTML = answers[1];
+    answer3Text.innerHTML = answers[2];
+    answer4Text.innerHTML = answers[3];
+
+    buzzInTimer.innerText = buzzInTimerLength;
+    setTimeout(decrementBuzzInTimer, 1000);
   });
   // PV4 Button Pressed
   PV4Button.addEventListener('click', () => {
@@ -475,6 +671,18 @@ function engine() {
     var question = qBank[categoryDisplay.textContent][1][3];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
+
+    var answers = qBank[categoryDisplay.textContent][3][3];
+    correctAnswer = answers[0];
+    answers = answers.sort(shuffle);
+
+    answer1Text.innerHTML = answers[0];
+    answer2Text.innerHTML = answers[1];
+    answer3Text.innerHTML = answers[2];
+    answer4Text.innerHTML = answers[3];
+
+    buzzInTimer.innerText = buzzInTimerLength;
+    setTimeout(decrementBuzzInTimer, 1000);
   });
   // PV5 Button Pressed
   PV5Button.addEventListener('click', () => {
@@ -487,6 +695,18 @@ function engine() {
     var question = qBank[categoryDisplay.textContent][1][4];
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
+
+    var answers = qBank[categoryDisplay.textContent][3][4];
+    correctAnswer = answers[0];
+    answers = answers.sort(shuffle);
+
+    answer1Text.innerHTML = answers[0];
+    answer2Text.innerHTML = answers[1];
+    answer3Text.innerHTML = answers[2];
+    answer4Text.innerHTML = answers[3];
+    
+    buzzInTimer.innerText = buzzInTimerLength;
+    setTimeout(decrementBuzzInTimer, 1000);
   });
 
   // Buzz-In Button Pressed
@@ -494,10 +714,11 @@ function engine() {
     buzzInScreen.style.visibility = 'hidden';
     answerScreen.style.visibility = 'visible';
     spinScreen.style.visibility = 'hidden';
-    answer1Text.innerHTML = answer1;
-    answer2Text.innerHTML = answer2;
-    answer3Text.innerHTML = answer3;
-    answer4Text.innerHTML = answer4;
+
+    setCurrentPlayer(1);
+
+    answerTimer.innerText = answerTimerLength;
+    setTimeout(decrementQuestionTimer, 1000);
   });
 
   //----------Answer Buttons----------//
@@ -506,25 +727,14 @@ function engine() {
     if (answer1Text.innerHTML == correctAnswer)
     {
       answer1Button.src = "assets/CorrectAnswerButton.png";
-
-      // Go to lobby screen with winner displayed
-      answerScreen.style.visibility = 'hidden';
-      lobbyScreen.style.visibility = 'visible';
-      let {winner, winnerPoints} = findWinner();
-      document.getElementById("winnerLabel").innerText = winner+" has won with "+winnerPoints+" points!";
-      document.getElementById("playButton").src = "assets/PlayAgainButton.png";
-
-      // Reset answer buttons
-      for (let i = 1; i < 5; i++)
-      {
-        document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
-      }
-
+      addPoints(pointValue, 1);
     }
     else
     {
       answer1Button.src = "assets/IncorrectAnswerButton.png";
-      for (let i = 1; i < 5; i++)
+      addPoints(-1*pointValue, 1);
+      // Display correct answer
+      for (var i = 5; i > 0; i--)
       {
         var currAnswer = document.getElementById("answer"+i+"Text");
         if (currAnswer.innerHTML == correctAnswer)
@@ -535,30 +745,23 @@ function engine() {
       }
     }
 
-
+    buzzInTimer.innerHTML = "5";
+    answerTimer.style.visibility = 'hidden';
+    numQuestions = numQuestions - 1;
+    setTimeout(viewCorrectAnswerTimer, 1000);
   });
   // Answer 2 Pressed
   answer2Button.addEventListener('click', () => {
     if (answer2Text.innerHTML == correctAnswer)
     {
       answer2Button.src = "assets/CorrectAnswerButton.png";
-
-      // Go to lobby screen with winner displayed
-      answerScreen.style.visibility = 'hidden';
-      lobbyScreen.style.visibility = 'visible';
-      let {winner, winnerPoints} = findWinner();
-      document.getElementById("winnerLabel").innerText = winner+" has won with "+winnerPoints+" points!";
-      document.getElementById("playButton").src = "assets/PlayAgainButton.png";
-
-      // Reset answer buttons
-      for (let i = 1; i < 5; i++)
-      {
-        document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
-      }
+      addPoints(pointValue, 1);
     }
     else
     {
       answer2Button.src = "assets/IncorrectAnswerButton.png";
+      addPoints(-1*pointValue, 1);
+      // Display correct answer
       for (let i = 1; i < 5; i++)
       {
         var currAnswer = document.getElementById("answer"+i+"Text");
@@ -569,29 +772,24 @@ function engine() {
         }
       }
     }
+
+    buzzInTimer.innerHTML = "5";
+    answerTimer.style.visibility = 'hidden';
+    numQuestions = numQuestions - 1;
+    setTimeout(viewCorrectAnswerTimer, 1000);
   });
   // Answer 3 Pressed
   answer3Button.addEventListener('click', () => {
     if (answer3Text.innerHTML == correctAnswer)
     {
       answer3Button.src = "assets/CorrectAnswerButton.png";
-
-      // Go to lobby screen with winner displayed
-      answerScreen.style.visibility = 'hidden';
-      lobbyScreen.style.visibility = 'visible';
-      let {winner, winnerPoints} = findWinner();
-      document.getElementById("winnerLabel").innerText = winner+" has won with "+winnerPoints+" points!";
-      document.getElementById("playButton").src = "assets/PlayAgainButton.png";
-
-      // Reset answer buttons
-      for (let i = 1; i < 5; i++)
-      {
-        document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
-      }
+      addPoints(pointValue, 1);
     }
     else
     {
       answer3Button.src = "assets/IncorrectAnswerButton.png";
+      addPoints(-1*pointValue, 1);
+      // Display correct answer
       for (let i = 1; i < 5; i++)
       {
         var currAnswer = document.getElementById("answer"+i+"Text");
@@ -602,29 +800,24 @@ function engine() {
         }
       }
     }
+
+    buzzInTimer.innerHTML = "5";
+    answerTimer.style.visibility = 'hidden';
+    numQuestions = numQuestions - 1;
+    setTimeout(viewCorrectAnswerTimer, 1000);
   });
   // Answer 4 Pressed
   answer4Button.addEventListener('click', () => {
     if (answer4Text.innerHTML == correctAnswer)
     {
       answer4Button.src = "assets/CorrectAnswerButton.png";
-
-      // Go to lobby screen with winner displayed
-      answerScreen.style.visibility = 'hidden';
-      lobbyScreen.style.visibility = 'visible';
-      let {winner, winnerPoints} = findWinner();
-      document.getElementById("winnerLabel").innerText = winner+" has won with "+winnerPoints+" points!";
-      document.getElementById("playButton").src = "assets/PlayAgainButton.png";
-
-      // Reset answer buttons
-      for (let i = 1; i < 5; i++)
-      {
-        document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
-      }
+      addPoints(pointValue, 1);
     }
     else
     {
       answer4Button.src = "assets/IncorrectAnswerButton.png";
+      addPoints(-1*pointValue, 1);
+      // Display correct answer
       for (let i = 1; i < 5; i++)
       {
         var currAnswer = document.getElementById("answer"+i+"Text");
@@ -635,6 +828,11 @@ function engine() {
         }
       }
     }
+
+    buzzInTimer.innerHTML = "5";
+    answerTimer.style.visibility = 'hidden';
+    numQuestions = numQuestions - 1;
+    setTimeout(viewCorrectAnswerTimer, 1000);
   });
 
 })();
