@@ -15,7 +15,6 @@
   // Screen Elements
   var connectScreenButton = document.getElementById('connectButton');
   var playButton = document.getElementById('playButton');
-  var wheel = document.getElementById('wheel');
   const categoryDisplay = document.getElementById('categoryDisplay');
   var usernameInput = document.getElementById("usernameInput");
   var PVDisplayText = document.getElementById("PVDisplayText");
@@ -50,6 +49,7 @@
   var numQuestions = 0;
   var pointValue = 0;
 
+  var category;
   var correctAnswer;
 
   // Timer Lengths
@@ -218,11 +218,9 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
         winner = document.getElementById('player'+i+'Name').innerText
       }
     }
-
-    console.log("Winner: "+winner);
-    console.log("Points: "+winnerPoints);
     return {winner, winnerPoints};
   }
+
 
   function randomize() {
     const questionBank = {
@@ -473,6 +471,21 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
       category = sector.label;
       pointValueScreen.style.visibility = 'visible';
       wheelSpun = false;
+      for (var i = 1; i <= 5; i++)
+      {
+        var PVButton = document.getElementById("PVButton"+i);
+
+        if (!qBank[category][0][i-1])
+        {
+          PVButton.src = "assets/UsedPointValueButton.png";
+          PVButton.style.cursor = "default";
+        }
+        else
+        {
+          PVButton.src = "assets/UnusedPointValueButton.png";
+          PVButton.style.cursor = "pointer";
+        }
+      }
     }
   }
 
@@ -579,6 +592,8 @@ function engine() {
     if (EL_spin.textContent == "SPIN!")
     {
       categoryDisplay.innerHTML = "";
+      EL_spin.textContent == ""
+      EL_spin.style.cursor = "default";
       if (!angVel)
       {
         wheelSpun = true;
@@ -590,123 +605,138 @@ function engine() {
   //----------Point Value Buttons----------//
   // PV1 Button Pressed
   PV1Button.addEventListener('click', () => {
-    pointValue = 10;
-    pointValueScreen.style.visibility = 'hidden';
-    buzzInScreen.style.visibility = 'visible';
-    spinScreen.style.visibility = 'hidden';
-    PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-    PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-    var question = qBank[categoryDisplay.textContent][1][0];
-    questionDisplay.innerHTML = "<b>"+question+"</b>";
-    questionDisplay2.innerHTML = "<b>"+question+"</b>";
+    if (PV1Button.style.cursor == "pointer")
+    {
+      pointValue = 10;
+      pointValueScreen.style.visibility = 'hidden';
+      buzzInScreen.style.visibility = 'visible';
+      spinScreen.style.visibility = 'hidden';
+      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
+      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+      var question = qBank[category][1][0];
+      questionDisplay.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.innerHTML = "<b>"+question+"</b>";
 
-    var answers = qBank[categoryDisplay.textContent][3][0];
-    correctAnswer = answers[0];
-    answers = answers.sort(shuffle);
+      var answers = qBank[category][3][0];
+      correctAnswer = qBank[category][2][0];
+      answers = answers.sort(shuffle);
 
-    answer1Text.innerHTML = answers[0];
-    answer2Text.innerHTML = answers[1];
-    answer3Text.innerHTML = answers[2];
-    answer4Text.innerHTML = answers[3];
-    
-    buzzInTimer.innerText = buzzInTimerLength;
-    setTimeout(decrementBuzzInTimer, 1000);
+      answer1Text.innerHTML = answers[0];
+      answer2Text.innerHTML = answers[1];
+      answer3Text.innerHTML = answers[2];
+      answer4Text.innerHTML = answers[3];
+      
+      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      setTimeout(decrementBuzzInTimer, 1000);
+    }
   });
   // PV2 Button Pressed
   PV2Button.addEventListener('click', () => {
-    pointValue = 20;
-    pointValueScreen.style.visibility = 'hidden';
-    buzzInScreen.style.visibility = 'visible';
-    spinScreen.style.visibility = 'hidden';
-    PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-    PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-    var question = qBank[categoryDisplay.textContent][1][1];
-    questionDisplay.innerHTML = "<b>"+question+"</b>";
-    questionDisplay2.innerHTML = "<b>"+question+"</b>";
+    if (PV2Button.style.cursor == "pointer")
+    {
+      pointValue = 20;
+      pointValueScreen.style.visibility = 'hidden';
+      buzzInScreen.style.visibility = 'visible';
+      spinScreen.style.visibility = 'hidden';
+      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
+      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+      var question = qBank[category][1][1];
+      questionDisplay.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.innerHTML = "<b>"+question+"</b>";
 
-    var answers = qBank[categoryDisplay.textContent][3][1];
-    correctAnswer = answers[0];
-    answers = answers.sort(shuffle);
+      var answers = qBank[category][3][1];
+      correctAnswer = qBank[category][2][1];
+      answers = answers.sort(shuffle);
 
-    answer1Text.innerHTML = answers[0];
-    answer2Text.innerHTML = answers[1];
-    answer3Text.innerHTML = answers[2];
-    answer4Text.innerHTML = answers[3];
+      answer1Text.innerHTML = answers[0];
+      answer2Text.innerHTML = answers[1];
+      answer3Text.innerHTML = answers[2];
+      answer4Text.innerHTML = answers[3];
 
-    buzzInTimer.innerText = buzzInTimerLength;
-    setTimeout(decrementBuzzInTimer, 1000);
+      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      setTimeout(decrementBuzzInTimer, 1000);
+    }
   });
   // PV3 Button Pressed
   PV3Button.addEventListener('click', () => {
-    pointValue = 30;
-    pointValueScreen.style.visibility = 'hidden';
-    buzzInScreen.style.visibility = 'visible';
-    spinScreen.style.visibility = 'hidden';
-    PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-    PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-    var question = qBank[categoryDisplay.textContent][1][2];
-    questionDisplay.innerHTML = "<b>"+question+"</b>";
-    questionDisplay2.innerHTML = "<b>"+question+"</b>";
+    if (PV3Button.style.cursor == "pointer")
+    {
+      pointValue = 30;
+      pointValueScreen.style.visibility = 'hidden';
+      buzzInScreen.style.visibility = 'visible';
+      spinScreen.style.visibility = 'hidden';
+      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
+      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+      var question = qBank[categoryDisplay.textContent][1][2];
+      questionDisplay.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.innerHTML = "<b>"+question+"</b>";
 
-    var answers = qBank[categoryDisplay.textContent][3][2];
-    correctAnswer = answers[0];
-    answers = answers.sort(shuffle);
+      var answers = qBank[category][3][2];
+      correctAnswer = qBank[category][2][2];
+      answers = answers.sort(shuffle);
 
-    answer1Text.innerHTML = answers[0];
-    answer2Text.innerHTML = answers[1];
-    answer3Text.innerHTML = answers[2];
-    answer4Text.innerHTML = answers[3];
+      answer1Text.innerHTML = answers[0];
+      answer2Text.innerHTML = answers[1];
+      answer3Text.innerHTML = answers[2];
+      answer4Text.innerHTML = answers[3];
 
-    buzzInTimer.innerText = buzzInTimerLength;
-    setTimeout(decrementBuzzInTimer, 1000);
+      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      setTimeout(decrementBuzzInTimer, 1000);
+    }
   });
   // PV4 Button Pressed
   PV4Button.addEventListener('click', () => {
-    pointValue = 40;
-    pointValueScreen.style.visibility = 'hidden';
-    buzzInScreen.style.visibility = 'visible';
-    spinScreen.style.visibility = 'hidden';
-    PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-    PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-    var question = qBank[categoryDisplay.textContent][1][3];
-    questionDisplay.innerHTML = "<b>"+question+"</b>";
-    questionDisplay2.innerHTML = "<b>"+question+"</b>";
+    if (PV4Button.style.cursor == "pointer")
+    {
+      pointValue = 40;
+      pointValueScreen.style.visibility = 'hidden';
+      buzzInScreen.style.visibility = 'visible';
+      spinScreen.style.visibility = 'hidden';
+      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
+      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+      var question = qBank[categoryDisplay.textContent][1][3];
+      questionDisplay.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.innerHTML = "<b>"+question+"</b>";
 
-    var answers = qBank[categoryDisplay.textContent][3][3];
-    correctAnswer = answers[0];
-    answers = answers.sort(shuffle);
+      var answers = qBank[category][3][3];
+      correctAnswer = qBank[category][2][3];
+      answers = answers.sort(shuffle);
 
-    answer1Text.innerHTML = answers[0];
-    answer2Text.innerHTML = answers[1];
-    answer3Text.innerHTML = answers[2];
-    answer4Text.innerHTML = answers[3];
+      answer1Text.innerHTML = answers[0];
+      answer2Text.innerHTML = answers[1];
+      answer3Text.innerHTML = answers[2];
+      answer4Text.innerHTML = answers[3];
 
-    buzzInTimer.innerText = buzzInTimerLength;
-    setTimeout(decrementBuzzInTimer, 1000);
+      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      setTimeout(decrementBuzzInTimer, 1000);
+    }
   });
   // PV5 Button Pressed
   PV5Button.addEventListener('click', () => {
-    pointValue = 50;
-    pointValueScreen.style.visibility = 'hidden';
-    buzzInScreen.style.visibility = 'visible';
-    spinScreen.style.visibility = 'hidden';
-    PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-    PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-    var question = qBank[categoryDisplay.textContent][1][4];
-    questionDisplay.innerHTML = "<b>"+question+"</b>";
-    questionDisplay2.innerHTML = "<b>"+question+"</b>";
+    if (PV5Button.style.cursor == "pointer")
+    {
+      pointValue = 50;
+      pointValueScreen.style.visibility = 'hidden';
+      buzzInScreen.style.visibility = 'visible';
+      spinScreen.style.visibility = 'hidden';
+      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
+      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+      var question = qBank[categoryDisplay.textContent][1][4];
+      questionDisplay.innerHTML = "<b>"+question+"</b>";
+      questionDisplay2.innerHTML = "<b>"+question+"</b>";
 
-    var answers = qBank[categoryDisplay.textContent][3][4];
-    correctAnswer = answers[0];
-    answers = answers.sort(shuffle);
+      var answers = qBank[category][3][4];
+      correctAnswer = qBank[category][2][4];
+      answers = answers.sort(shuffle);
 
-    answer1Text.innerHTML = answers[0];
-    answer2Text.innerHTML = answers[1];
-    answer3Text.innerHTML = answers[2];
-    answer4Text.innerHTML = answers[3];
-    
-    buzzInTimer.innerText = buzzInTimerLength;
-    setTimeout(decrementBuzzInTimer, 1000);
+      answer1Text.innerHTML = answers[0];
+      answer2Text.innerHTML = answers[1];
+      answer3Text.innerHTML = answers[2];
+      answer4Text.innerHTML = answers[3];
+      
+      buzzInTimer.innerText = toString(buzzInTimerLength).bold();
+      setTimeout(decrementBuzzInTimer, 1000);
+    }
   });
 
   // Buzz-In Button Pressed
@@ -715,9 +745,11 @@ function engine() {
     answerScreen.style.visibility = 'visible';
     spinScreen.style.visibility = 'hidden';
 
+    qBank[category][0][(pointValue/10)-1] = false;
+
     setCurrentPlayer(1);
 
-    answerTimer.innerText = answerTimerLength;
+    answerTimer.innerText = toString(answerTimerLength).bold();
     setTimeout(decrementQuestionTimer, 1000);
   });
 
@@ -734,7 +766,7 @@ function engine() {
       answer1Button.src = "assets/IncorrectAnswerButton.png";
       addPoints(-1*pointValue, 1);
       // Display correct answer
-      for (var i = 5; i > 0; i--)
+      for (var i = 1; i < 5; i++)
       {
         var currAnswer = document.getElementById("answer"+i+"Text");
         if (currAnswer.innerHTML == correctAnswer)
