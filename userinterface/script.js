@@ -175,7 +175,7 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     lobbyScreen.style.visibility = 'visible';
     answerTimer.style.visibility = 'hidden';
     let {winner, winnerPoints} = findWinner();
-    document.getElementById("winnerLabel").innerText = winner+" has won with "+winnerPoints+" points!";
+    document.getElementById("winnerLabel").innerHTML = (winner+" has won with "+winnerPoints+" points!").bold();
     document.getElementById("playButton").src = "assets/PlayAgainButton.png";
     questionsLeft.style.visibility = 'hidden';
     categoryDisplay.innerText = "";
@@ -183,6 +183,20 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     for (let i = 1; i < 5; i++)
     {
       document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
+    }
+    // Reset used questions
+    for (var [key, value] of Object.entries(qBank))
+    {
+      for (let i = 0; i < 5; i++)
+      {
+        value[0][i] = true;
+      }
+    }
+    setCurrentPlayer(0);
+    // Reset points
+    for (let i = 1; i <= 3; i++)
+    {
+      document.getElementById('player'+i+'Points').innerHTML = "0".bold();
     }
   }
 
@@ -237,7 +251,7 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     for (let i = 1; i <= 3; i++)
     {
       var currPlayerPoints = Number(document.getElementById('player'+i+'Points').innerText);
-      if (winnerPoints == 0 || currPlayerPoints > winnerPoints)
+      if (winner == '' || currPlayerPoints > winnerPoints)
       {
         winnerPoints = currPlayerPoints;
         winner = document.getElementById('player'+i+'Name').innerText
@@ -332,7 +346,7 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
             ],
             [
               "Hallmark Cards",
-              "his resignation",
+              "his Resignation",
               "How Great Thou Art",
               "the Whisky a Go Go",
               "Yes, Virginia, there is a Santa Claus"
@@ -526,6 +540,20 @@ function frame() {
 function engine() {
     frame();
     requestAnimationFrame(engine)
+}
+
+function isEmpty(category)
+{
+  var emptyCategory = true;
+  for (let i = 0; i < 5; i++)
+  {
+    if (qBank[category][0][i])
+    {
+      emptyCategory = false;
+      break;
+    }
+  }
+  return emptyCategory;
 }
 
 
