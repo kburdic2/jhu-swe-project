@@ -172,7 +172,6 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
   }
 
   function fadeOutAudio(audio){
-    console.log("looped");
     if (audio.volume - 0.05 > 0)
     {
       audio.volume -= 0.05;
@@ -192,7 +191,7 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     {
       setTimeout(fadeInAudio, 100, audio, desiredVolume);
     }
-  } 
+  }
 
   function resetGame(){
     themeMusic.currentTime = 0;
@@ -248,10 +247,24 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     return Math.random() > 0.5 ? -1 : 1;
   }
 
-  function addPoints(points, playerIndex)
+  function addPoints(playerIndex, originalPoints)
   {
     var playerPoints = document.getElementById("player"+playerIndex+"Points");
-    playerPoints.innerHTML = (parseInt(playerPoints.innerText) + points).toString().bold();
+    if (parseInt(playerPoints.innerText) + 1 <= originalPoints + pointValue)
+    {
+      playerPoints.innerHTML = (parseInt(playerPoints.innerText) + 1).toString().bold();
+      setTimeout(addPoints, 25, playerIndex, originalPoints);
+    }
+  }
+
+  function subtractPoints(playerIndex, originalPoints)
+  {
+    var playerPoints = document.getElementById("player"+playerIndex+"Points");
+    if (parseInt(playerPoints.innerText) - 1  >= originalPoints - pointValue)
+    {
+      playerPoints.innerHTML = (parseInt(playerPoints.innerText) - 1).toString().bold();
+      setTimeout(subtractPoints, 25, playerIndex, originalPoints);
+    }
   }
 
   function setCurrentPlayer(playerIndex)
@@ -882,14 +895,16 @@ function isEmpty(category)
       applauseAudio.currentTime = 0.5;
       if (!muted) applauseAudio.play();
       answer1Button.src = "assets/CorrectAnswerButton.png";
-      addPoints(pointValue, 1);
+      var playerIndex = 1;
+      addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
     }
     else
     {
       awwAudio.currentTime = 0.5;
       if (!muted) awwAudio.play();
       answer1Button.src = "assets/IncorrectAnswerButton.png";
-      addPoints(-1*pointValue, 1);
+      var playerIndex = 1;
+      subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
       // Display correct answer
       for (var i = 1; i < 5; i++)
       {
@@ -921,14 +936,16 @@ function isEmpty(category)
       applauseAudio.currentTime = 0.5;
       if (!muted) applauseAudio.play();
       answer2Button.src = "assets/CorrectAnswerButton.png";
-      addPoints(pointValue, 1);
+      var playerIndex = 1;
+      addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
     }
     else
     {
       awwAudio.currentTime = 0.5;
       if (!muted) awwAudio.play();
       answer2Button.src = "assets/IncorrectAnswerButton.png";
-      addPoints(-1*pointValue, 1);
+      var playerIndex = 1;
+      subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
       // Display correct answer
       for (let i = 1; i < 5; i++)
       {
@@ -960,14 +977,16 @@ function isEmpty(category)
       applauseAudio.currentTime = 0.5;
       if (!muted) applauseAudio.play();
       answer3Button.src = "assets/CorrectAnswerButton.png";
-      addPoints(pointValue, 1);
+      var playerIndex = 1;
+      addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
     }
     else
     {
       awwAudio.currentTime = 0.5;
       if (!muted) awwAudio.play();
       answer3Button.src = "assets/IncorrectAnswerButton.png";
-      addPoints(-1*pointValue, 1);
+      var playerIndex = 1;
+      subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
       // Display correct answer
       for (let i = 1; i < 5; i++)
       {
@@ -999,14 +1018,16 @@ function isEmpty(category)
       applauseAudio.currentTime = 0.5;
       if (!muted) applauseAudio.play();
       answer4Button.src = "assets/CorrectAnswerButton.png";
-      addPoints(pointValue, 1);
+      var playerIndex = 1;
+      addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
     }
     else
     {
       awwAudio.currentTime = 0.5;
       if (!muted) awwAudio.play();
       answer4Button.src = "assets/IncorrectAnswerButton.png";
-      addPoints(-1*pointValue, 1);
+      var playerIndex = 1;
+      subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
       // Display correct answer
       for (let i = 1; i < 5; i++)
       {
