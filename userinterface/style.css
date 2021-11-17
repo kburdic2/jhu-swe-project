@@ -21,6 +21,15 @@ body {
    left: 32%;
  }
 
+ .muteButton {
+  width:3%;
+  height: auto;
+  z-index: 2;
+  position: absolute;
+  top: 94%;
+  left: 0.25%;
+}
+
  .wheel {
   width: 27.5%;
   height: auto;
