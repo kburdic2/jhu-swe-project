@@ -171,6 +171,29 @@ const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
     }
   }
 
+  function fadeOutAudio(audio){
+    console.log("looped");
+    if (audio.volume - 0.05 > 0)
+    {
+      audio.volume -= 0.05;
+      setTimeout(fadeOutAudio, 100, audio);
+    }
+    else
+    {
+      audio.volume = 0;
+      audio.pause();
+    }
+  }
+
+  function fadeInAudio(audio, desiredVolume){
+    audio.play();
+    audio.volume += 0.05;
+    if (audio.volume < desiredVolume)
+    {
+      setTimeout(fadeInAudio, 100, audio, desiredVolume);
+    }
+  } 
+
   function resetGame(){
     themeMusic.currentTime = 0;
     themeMusic.play();
@@ -598,7 +621,8 @@ function isEmpty(category)
       muteButton.src = "assets/Unmuted.png";
       if (connectScreen.style.visibility == 'visible' || lobbyScreen.style.visibility == 'visible')
       {
-        themeMusic.play();
+        themeMusic.volume = 0;
+        fadeInAudio(themeMusic, 0.3);
       }
     }
   });
@@ -644,7 +668,7 @@ function isEmpty(category)
     // Validate input
     if (questionNumberInput.value > 0 && questionNumberInput.value <= 30)
     {
-      themeMusic.pause();
+      fadeOutAudio(themeMusic);
       numQuestions = questionNumberInput.value;
       errorQuestionNumber.style.visibility = "hidden";
       lobbyScreen.style.visibility = 'hidden';
@@ -827,7 +851,7 @@ function isEmpty(category)
 
   // Buzz-In Button Pressed
   buzzerButton.addEventListener('click', () => {
-    buzzerAudio.currentTime = 0;
+    buzzerAudio.currentTime = 0.1;
     if (!muted) buzzerAudio.play();
     buzzInScreen.style.visibility = 'hidden';
     answerScreen.style.visibility = 'visible';
