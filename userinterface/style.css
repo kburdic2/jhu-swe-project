@@ -426,18 +426,31 @@ body {
   height: 15%;
   z-index: 2;
   position: absolute;
-  top: 75%;
+  top: 70%;
   left: 9%;
 }
 
 .PVDisplayText {
   z-index: 3;
   position: absolute;
-  top: 79.5%;
+  top: 74.5%;
   left: 11.25%;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 4.5vw;
   color:green;
+}
+
+.answerDisplay {
+  width: 60%;
+  height: 10%;
+  z-index: 3;
+  position: absolute;
+  top: 86%;
+  left: 19.5%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:2vw;
+  color:red;
+  text-align: center;
 }
 
 .questionDisplay {
@@ -445,7 +458,7 @@ body {
   height: 10%;
   z-index: 3;
   position: absolute;
-  top: 77.5%;
+  top: 72%;
   left: 19.5%;
   font-family: Arial, Helvetica, sans-serif;
   font-size:2vw;

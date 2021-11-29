@@ -22,9 +22,11 @@
   var buzzerButton = document.getElementById('buzzerButton');
   var buzzInTimer = document.getElementById('buzzInTimer');
   var answerTimer = document.getElementById('answerTimer');
+  var answerDisplay = document.getElementById('answerDisplay');
   var questionDisplay = document.getElementById('questionDisplay');
   var questionDisplay2 = document.getElementById('questionDisplay2');
   var muteButton = document.getElementById('muteButton');
+  var questionsLeftNumber = document.getElementById("questionsLeftNumber");
 
   // Point Value Buttons
   var PV1Button = document.getElementById("PVButton1");
@@ -54,6 +56,8 @@
   var correctAnswer;
 
   // Timer Lengths
+  const PVtimerLength = "3";
+  const answerDisplayLength = "5";
   const buzzInTimerLength = "9";
   const answerTimerLength = "15";
 
@@ -74,6 +78,7 @@
   const rCate = initializedBank[1];
   var wheelSpun = false;
 
+  // Wheel colored sectors
   const sectors = [{
     color: "#fff000",
     label: rCate[0]
@@ -100,6 +105,7 @@
   },
 ];
 
+// More wheel variables
 const rand = (m, M) => Math.random() * (M - m) + m;
 const tot = sectors.length;
 const EL_spin = document.querySelector("#spin");
@@ -114,460 +120,581 @@ let angVel = 0; // Angular velocity
 let ang = 0; // Angle in radians
 const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
 
-  //-------------------------Functions-------------------------//
+//-------------------------Functions-------------------------//
 
-  function sleep(milliseconds) {
-    const date = Date.now();
-    let currentDate = null;
-    do {
-      currentDate = Date.now();
-    } while (currentDate - date < milliseconds);
+/* 
+Basic sleep function
+  This function works to enable a sleep, but it's important to note that all elements of a code block seem
+  to execute simultaneously, so this sleep will happen at the same time as other code in the same scope.
+  It's best to use the buzzInTimer while it's hidden as a timer to ensure accuracy in most cases.
+*/
+function sleep(milliseconds) {
+  const date = Date.now();
+  let currentDate = null;
+  do {
+    currentDate = Date.now();
+  } while (currentDate - date < milliseconds);
+}
+
+/*
+Buzz in timer function
+  This function uses a recursive setTimeout call to prevent the in-scope code from executing all at once.
+  Use this function for most timing needs.
+*/
+function decrementBuzzInTimer(){
+  buzzInTimer.textContent = (parseInt(buzzInTimer.textContent) - 1).toString();
+  if (parseInt(buzzInTimer.textContent) > 0)
+  {
+    setTimeout(decrementBuzzInTimer, 1000);
   }
+  else if (parseInt(buzzInTimer.textContent) == 0 && buzzInScreen.style.visibility == 'visible') // Timer expired on buzz in screen
+  {
+    answerDisplay.textContent = "Answer: " + correctAnswer;
 
-  function decrementBuzzInTimer(){
-    buzzInTimer.innerHTML = (parseInt(buzzInTimer.innerText) - 1).toString().bold();
-    if (parseInt(buzzInTimer.innerText) > 0)
-    {
-      setTimeout(decrementBuzzInTimer, 1000);
-    }
-    else if (buzzInScreen.style.visibility == 'visible') // Timer expired on buzz in screen
-    {
-      nextQuestion();
-    }
+    // Decrement questions
+    numQuestions = numQuestions - 1;
+    questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
+    
+    qBank[category][0][(pointValue/10)-1] = false; // Remove question from list
+
+    // Wait 5 seconds before moving to next question
+    answerTimer.innerText = answerDisplayLength;
+    setTimeout(decrementQuestionTimer, 1000, -1);
   }
+}
 
-  function decrementQuestionTimer(){
-    answerTimer.innerHTML = (parseInt(answerTimer.innerText) - 1).toString().bold();
-    if (parseInt(answerTimer.innerText) > 0)
-    {
-      setTimeout(decrementQuestionTimer, 1000);
-    }
-    else if (parseInt(answerTimer.innerText) == 0 && answerScreen.style.visibility == 'visible') // Timer expired on answer screen
-    {
-      questionDisplay2.innerHTML = "Timer expired!".bold();
-      questionDisplay2.style.color = "red";
-      addPoints(-1*pointValue, 1);
-      // Display correct answer
-      for (var i = 1; i < 5; i++)
-      {
-        var currAnswer = document.getElementById("answer"+i+"Text");
-        if (currAnswer.innerHTML == correctAnswer)
-        {
-          document.getElementById("answer"+i+"Button").src = "assets/CorrectAnswerButton.png";
-          break;
-        }
-      }
-      buzzInTimer.innerHTML = "8";
-      if (numQuestions > 0)
-      {
-        setTimeout(nextQuestion, 5000);
-      }
-      else
-      {
-        setTimeout(resetGame, 5000);
-      }
-      jeopardyMusic.pause();
-      jeopardyMusic.currentTime = 0.5;
-    }
+/*
+Question timer function
+  Similar to the buzz in timer, this function recursively uses setTimeout to create accurate timing, but
+  specifically for the question timer which has different time-out behavior than the buzz in timer.
+  This function is also used for the point value 3 second timer.
+*/
+function decrementQuestionTimer(PVindex){
+  answerTimer.innerText = (parseInt(answerTimer.textContent) - 1).toString();
+  if (parseInt(answerTimer.textContent) > 0)
+  {
+    setTimeout(decrementQuestionTimer, 1000, PVindex);
   }
-
-  function fadeOutAudio(audio){
-    if (audio.volume - 0.05 > 0)
+  else if (parseInt(answerTimer.textContent) == 0 && answerScreen.style.visibility == 'visible') // Timer expired on answer screen
+  {
+    questionDisplay2.innerHTML = "Timer expired!".bold();
+    questionDisplay2.style.color = "red";
+    addPoints(-1*pointValue, 1);
+    // Display correct answer
+    for (var i = 1; i < 5; i++)
     {
-      audio.volume -= 0.05;
-      setTimeout(fadeOutAudio, 100, audio);
+      var currAnswer = document.getElementById("answer"+i+"Text");
+      if (currAnswer.innerHTML == correctAnswer)
+      {
+        document.getElementById("answer"+i+"Button").src = "assets/CorrectAnswerButton.png";
+        break;
+      }
+    }
+    buzzInTimer.innerHTML = "8";
+    if (numQuestions > 0)
+    {
+      setTimeout(nextQuestion, 5000);
     }
     else
     {
-      audio.volume = 0;
-      audio.pause();
+      setTimeout(resetGame, 5000);
     }
+    jeopardyMusic.pause();
+    jeopardyMusic.currentTime = 0.5; // Better start time for music
+  }
+  else if (parseInt(answerTimer.textContent) == 0 && pointValueScreen.style.visibility == 'visible') // Timer expired on spin screen when displaying point value
+  {
+    pointValueScreen.style.visibility = 'hidden';
+    buzzInScreen.style.visibility = 'visible';
+    spinScreen.style.visibility = 'hidden';
+    PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
+    PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
+
+    var question = qBank[category][1][PVindex];
+    questionDisplay.innerHTML = "<b>"+question+"</b>";
+    questionDisplay2.innerHTML = "<b>"+question+"</b>";
+    questionDisplay2.style.color = "black";
+
+    var answers = qBank[category][3][PVindex];
+    correctAnswer = qBank[category][2][PVindex];
+    answers = answers.sort(shuffle);
+
+    answer1Text.innerHTML = answers[0];
+    answer2Text.innerHTML = answers[1];
+    answer3Text.innerHTML = answers[2];
+    answer4Text.innerHTML = answers[3];
+    
+    buzzInTimer.innerHTML = buzzInTimerLength.bold();
+    setTimeout(decrementBuzzInTimer, 1000);
+  }
+  else if (parseInt(answerTimer.textContent) == 0 && buzzInScreen.style.visibility == 'visible')
+  {
+    nextQuestion();
+  }
+}
+
+/*
+Fade out audio function
+  This function creates an incremental fade out of the passed-in audio. The audio will fade then be paused.
+*/
+function fadeOutAudio(audio){
+  if (audio.volume - 0.05 > 0)
+  {
+    audio.volume -= 0.05;
+    setTimeout(fadeOutAudio, 100, audio);
+  }
+  else
+  {
+    audio.volume = 0;
+    audio.pause();
+  }
+}
+
+/*
+Fade in audio function
+  This function ensures an audio is playing, then incrementally fades in the audio from its existing volume to the specified desiredVolume.
+*/
+function fadeInAudio(audio, desiredVolume){
+  audio.play();
+  audio.volume += 0.05;
+  if (audio.volume < desiredVolume)
+  {
+    setTimeout(fadeInAudio, 100, audio, desiredVolume);
+  }
+}
+
+/*
+Reset game function
+  This is the end-game scenario function which resets the point values and other elements, as well as displaying
+  a winner, so that the game may be returned to its initial game state.
+*/
+function resetGame(){
+  // Start lobby music
+  themeMusic.currentTime = 0;
+  themeMusic.play();
+
+  // Go to lobby screen
+  answerScreen.style.visibility = 'hidden';
+  lobbyScreen.style.visibility = 'visible';
+  answerTimer.style.visibility = 'hidden';
+  questionsLeft.style.visibility = 'hidden';
+  document.getElementById("playButton").src = "assets/PlayAgainButton.png";
+  categoryDisplay.innerText = "";
+
+  // Display winner
+  let {winner, winnerPoints} = findWinner();
+  document.getElementById("winnerLabel").innerHTML = (winner+" has won with "+winnerPoints+" points!").bold();
+
+  // Reset answer buttons
+  for (let i = 1; i < 5; i++)
+  {
+    document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
   }
 
-  function fadeInAudio(audio, desiredVolume){
-    audio.play();
-    audio.volume += 0.05;
-    if (audio.volume < desiredVolume)
+  // Reset used questions
+  for (var [key, value] of Object.entries(qBank))
+  {
+    for (let i = 0; i < 5; i++)
     {
-      setTimeout(fadeInAudio, 100, audio, desiredVolume);
+      value[0][i] = true;
     }
   }
+  
+  // Reset current player to no-one
+  setCurrentPlayer(0);
 
-  function resetGame(){
-    themeMusic.currentTime = 0;
-    themeMusic.play();
-    // Go to lobby screen with winner displayed
-    answerScreen.style.visibility = 'hidden';
-    lobbyScreen.style.visibility = 'visible';
-    answerTimer.style.visibility = 'hidden';
-    let {winner, winnerPoints} = findWinner();
-    document.getElementById("winnerLabel").innerHTML = (winner+" has won with "+winnerPoints+" points!").bold();
-    document.getElementById("playButton").src = "assets/PlayAgainButton.png";
-    questionsLeft.style.visibility = 'hidden';
-    categoryDisplay.innerText = "";
-    // Reset answer buttons
-    for (let i = 1; i < 5; i++)
+  // Reset player points
+  for (let i = 1; i <= 3; i++)
+  {
+    document.getElementById('player'+i+'Points').innerHTML = "0".bold();
+  }
+}
+
+/*
+Next question function
+  Return to the spin screen with the wheel prepared to spin for the next category
+*/
+function nextQuestion(){
+  answerDisplay.textContent = "";
+
+  answerScreen.style.visibility = 'hidden';
+  buzzInScreen.style.visibility = 'hidden';
+  spinScreen.style.visibility = 'visible';
+  answerTimer.style.visibility = 'hidden';
+  // Reset answer buttons
+  for (let i = 1; i < 5; i++)
+  {
+    document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
+  }
+  questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
+  EL_spin.innerHTML = "SPIN!".bold();
+  EL_spin.style.cursor = "pointer";
+  categoryDisplay.innerText = "";
+}
+
+/*
+Shuffle function
+  Used to randomize the order of answers to questions
+*/
+function shuffle(a, b)
+{
+  return Math.random() > 0.5 ? -1 : 1;
+}
+
+/*
+Add points function
+  Use a recursive setTimeout call to increase a player's point value by the current pointValue in an animated manner
+*/
+function addPoints(playerIndex, originalPoints)
+{
+  var playerPoints = document.getElementById("player"+playerIndex+"Points");
+  if (parseInt(playerPoints.innerText) + 1 <= originalPoints + pointValue)
+  {
+    playerPoints.innerHTML = (parseInt(playerPoints.innerText) + 1).toString().bold();
+    setTimeout(addPoints, 25, playerIndex, originalPoints);
+  }
+}
+
+/*
+Subtract points function
+  Use a recursive setTimeout call to decrease a player's point value by the current pointValue in an animated manner
+*/
+function subtractPoints(playerIndex, originalPoints)
+{
+  var playerPoints = document.getElementById("player"+playerIndex+"Points");
+  if (parseInt(playerPoints.innerText) - 1  >= originalPoints - pointValue)
+  {
+    playerPoints.innerHTML = (parseInt(playerPoints.innerText) - 1).toString().bold();
+    setTimeout(subtractPoints, 25, playerIndex, originalPoints);
+  }
+}
+
+/*
+Set current player function
+  Set all player icons to default except for the playerIndex player, whose icon will be the CurrentPlayerIcon
+*/
+function setCurrentPlayer(playerIndex)
+{
+  for (var i = 1; i <= 3; i++)
+  {
+    var playerIcon = document.getElementById("player"+i+"Icon");
+    
+    if (i == playerIndex)
     {
-      document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
+      playerIcon.src = "assets/CurrentPlayerIcon.png";
     }
-    // Reset used questions
-    for (var [key, value] of Object.entries(qBank))
+    else
     {
-      for (let i = 0; i < 5; i++)
+      playerIcon.src = "assets/PlayerIcon.png";
+    }
+  }    
+}
+
+/*
+Find winner function
+  Determines which player has the most points.
+  TO DO: Implement multiple winners, aka ties
+*/
+function findWinner()
+{
+  var winner = '';
+  var winnerPoints = 0;
+  for (let i = 1; i <= 3; i++)
+  {
+    var currPlayerPoints = Number(document.getElementById('player'+i+'Points').innerText);
+    if (winner == '' || currPlayerPoints > winnerPoints)
+    {
+      winnerPoints = currPlayerPoints;
+      winner = document.getElementById('player'+i+'Name').innerText
+    }
+  }
+  return {winner, winnerPoints};
+}
+
+/*
+Randomize function
+  Randomly pick 6 categories from the master questionBank and return it as the game's question bank.
+*/
+function randomize() {
+  const questionBank = {
+      "SOUNDS LIKE TENNIS": [
+          [true, true, true, true, true],
+          [
+            'Ambrose Bierce defined it as "a temporary insanity curable by marriage"',
+            "Likely spot for a potential earthquake",
+            "The money you net from an investment",
+            "In blackjack it can have one of 2 different values",
+            "The operating expenses of running a business"
+          ],
+          [
+            "love",
+            "a fault",
+            "a return",
+            "ace",
+            "overhead"
+          ],
+          [
+            ["love", "hatred", "awkwardness", "shyness"],
+            ["a fault", "a slope", "a berm", "a river"],
+            ["a return", "a profit", "a gross", "a deduction"],
+            ["ace", "king", "queen", "jack"],
+            ["overhead", "payroll", "capital", "liabilities"]
+          ]
+      ],
+      "THAT'S CANADIAN ENTERTAINMENT": [
+          [true, true, true, true, true],
+          [
+            "This hip-hopper's love for Toronto is well known, & a 2018 report said about 5% of the city's annual tourism income was due to him",
+            '"You Oughta Know" this Ottawa-born singer imported Flea & Dave Navarro to play on that song',
+            'This Vancouver native lent his voice to the city\'s public transit in 2018; here\'s a sample: "Get those feet off the seat; my mom might be sitting there one day, come on"',
+            'Canadians starring on this sketch show included Eugene Levy, Catherine O\'Hara & John Candy',
+            'Eve on "Killing Eve", she considered studying journalism but went to Montreal\'s National Theatre School instead'
+          ],
+          [
+            'Drake',
+            'Alanis Morissette',
+            'Seth Rogen',
+            'Second City TV',
+            'Sandra Oh'
+          ],
+          [
+            ["Drake", "Eminem", "Kanye West", "Post Malone"],
+            ["Alanis Morissette", "Celine Dion", "Jessie Reyez", "Nelly Furtado"],
+            ["Seth Rogen", "Ryan Reynolds", "Michael J. Fox", "Michael Bublé"],
+            ["Second City TV", "SNL Québec", "SketchCom", "Super Dave"],
+            ["Sandra Oh", "Jodie Comer", "Fiona Shaw", "Gemma Whelan"]
+          ]
+      ],
+      "TASTY BUSINESS": [
+          [true, true, true, true, true],
+          [
+            "Developer Jef Raskin loved this type of apple so much he named an Apple computer after one",
+            "BB is the stock symbol of this company that today is more into cybersecurity than devices",
+            "Makes sense: BR Standard is a fashion line from this store",
+            "Named for a green sushi condiment, this company calls itself \"the world's hottest cloud storage\"",
+            "This restaurant chain says the only ingredient it uses that's hard to pronounce is the pepper in its name"
+          ],
+          [
+            "a McIntosh",
+            "BlackBerry",
+            "Banana Republic",
+            "Wasabi",
+            "Chipotle"
+          ],
+          [
+            ["a McIntosh", "a Fuji", "a Mutsu", "an Opal"],
+            ["BlackBerry", "Bloomberg", "Best Buy", "BlueBird"],
+            ["Banana Republic", "British Royale", "Blue Ridge", "Burlington Reserve"],
+            ["Wasabi", "Shoyu", "Ichimi", "Karashi"],
+            ["Chipotle", "Banana Republic", "Bojangles", "Chili\'s"]
+          ]
+      ],
+      "SOMEBODY WROTE THAT": [
+          [true, true, true, true, true],
+          [
+            "Melvina Young wrote the greeting card titled \"The Sisterhood\" for this company\'s \"Uplifted & Empowered\" collection",
+            "Raymond K. Price Jr. wrote the first & last words of the Nixon presidency, his first inaugural address & this last public speech",
+            "\"How Great\" is this beloved hymn that began as a Swedish poem by Carl Boberg & has been recorded by Carrie Underwood & Elvis",
+            "Lynell George wrote the album notes for \"Otis Redding Live at\" this club on the Sunset Strip & won a Grammy for the effort",
+            "Newspaper editor Francis Pharcellus Church wrote the 1897 reply to young Virginia O'Hanlon that's known by these 7 words"
+          ],
+          [
+            "Hallmark Cards",
+            "his Resignation",
+            "How Great Thou Art",
+            "the Whisky a Go Go",
+            "Yes, Virginia, there is a Santa Claus"
+          ],
+          [
+            ["Hallmark Cards", "American Greetings", "Quilling Cards", "Nobleworks"],
+            ["his Resignation", "his State of the Union", "his Vietnam War address", "his National Energy Policy"],
+            ["How Great Thou Art", "How Great the Spring Blooms", "How Great Our Love", "How Great Is God"],
+            ["the Whisky a Go Go", "Ciro\'s", "the Mocambo", "the Trocadero"],
+            ["Yes, Virginia, there is a Santa Claus", "Yes Virginia, there is an Easter Bunny", "Yes Virginia, there is a tooth fairy", "Yes Virginia, there is a Jack Frost"]
+          ]
+      ],
+      "NO MAN": [
+          [true, true, true, true, true],
+          [
+            "This Babylonian, not messing around with his \"code\": \"if a son strike his father, his hands shall be hewn off\"",
+            "Andrew Volstead gave a big \"no\" with the National this act, which enforced the 18th Amendment",
+            "On April 28, 1789 Fletcher Christian & crew said no to this captain's tough love, sending him off in a boat",
+            "In this 1944 battle named for the shape of opposing lines, U.S. General Anthony McAuliffe replied \"Nuts!\" to a demand for surrender",
+            "Dear Diary, in 1662 he was not a fan of \"A Midsummer Night\'s Dream\", \"which I had never seen before, nor shall ever again\""
+          ],
+          [
+            "Hammurabi",
+            "Prohibition",
+            "Captain Bligh",
+            "Battle of the Bulge",
+            "Samuel Pepys"
+          ],
+          [
+            ["Hammurabi", "Sharia", "Urukagina", "Gentoo"],
+            ["Prohibition", "Slavery", "Voter Discrimination", "Income Tax"],
+            ["Captain Bligh", "Captain Durham", "Captain Yorke", "Captain Rainier"],
+            ["Battle of the Bulge", "Battle of Mill", "Battle of the Coral Sea", "Battle of Slim River"],
+            ["Samuel Pepys", "Cyril Wyche", "John Dryden", "Hermann Ulrici"],
+          ]
+      ],
+      "IS AN ISLAND": [
+          [true, true, true, true, true],
+          [
+            "The Kanmon Undersea Tunnel connects Kyushu with this largest of the 4 main islands of Japan",
+            "Take in the beauty of Hanauma Bay on this island, also known for the totally awesome waves on its North Shore",
+            "One third of Earth's lava flow since 1500 is said to have come from volcanoes in this Atlantic island nation",
+            "Brunei & the 13,500-foot Mount Kinabalu are on this large island that lies on the equator",
+            "Once called Mount Victoria, Tomanivi on Viti Levu is the highest point in this nation"
+          ],
+          [
+            "Honshu",
+            "Oahu",
+            "Iceland",
+            "Borneo",
+            "Fiji"
+          ],
+          [
+            ["Honshu", "Hokkaido", "Shikoku", "Kyushu"],
+            ["Oahu", "Maui", "Lanai", "Kauai"],
+            ["Iceland", "Greenland", "Newfoundland", "Iwo Jima"],
+            ["Borneo", "Tarawa", "Waigeo", "Bioko"],
+            ["Fiji", "Nepal", "Peru", "Bolivia"],
+          ]
+      ],
+      "FIRST DAY ON THE JOB": [
+          [true, true, true, true, true],
+          [
+            "Getting used to the binoculars & keeping an eye out for rip currents are first-day tasks at this summer job",
+            "One-word title of the job seen here: on your first day, don't be nervous, remember your glissando & fingering technique",
+            "New at this gig, Neil Gorsuch embraced life on the cafeteria committee & having to open the door when someone knocks",
+            "You've just got this gig assisting the mixologists; lots of lifting, so don't hurt the body part in the job's name",
+            "You're the new court reporter, dazzle them with your fingers while you operate this intimidating machine"
+          ],
+          [
+            "a lifeguard",
+            "flautist",
+            "a Supreme Court justice",
+            "barback",
+            "stenography machine"
+          ],
+          [
+            ["a lifeguard", "a server", "a babysitter", "a golf caddy"],
+            ["flautist", "pianist", "masseuse", "manicurist"],
+            ["a Supreme Court justice", "a Congressman", "a Superintendent", "a University Dean"],
+            ["barback", "chemist", "producer", "legislator"],
+            ["stenography machine", "type writer", "computer", "tablet"]
+          ]
+      ],
+      "FACTS ABOUT ANIMALS": [
+          [true, true, true, true, true],
+          [
+            "The right or bowhead this gets tangled in fishing nets, which can stunt growth, causing the species to be shorter than its typical 52 feet",
+            "The 2-toed one of these can live up to 20 years, most of it upside down in the canopy of the rainforest",
+            "When faced with danger, certain ducks, snakes & mammals do this, also called thanatosis",
+            "The kestrel is also known as this type of hawk, after the nice little bird it's looking around for here",
+            "Sweden's only wild feline is this short-tailed cat that's able to bring down much larger animals, like reindeer & roe deer"
+          ],
+          [
+            "a whale",
+            "a sloth",
+            "play dead",
+            "sparrow hawk",
+            "lynx"
+          ],
+          [
+            ["a whale", "a giant squid", "a shark", "an octapus"],
+            ["a sloth", "a koala bear", "a bat", "an orangutan"],
+            ["play dead", "freeze", "run away", "attack"],
+            ["sparrow hawk", "finch hawk", "starling hawk", "parrot hawk"],
+            ["lynx", "bobcats", "servals", "ocelots"]
+          ]
+      ]
+  };
+  
+  let roundBank = {};
+  let roundCate = [];
+  let categories = Object.keys(questionBank);
+  const NUM_CATEGORIES_CHOSEN = 6;
+
+  for (let i = NUM_CATEGORIES_CHOSEN; i > 0; i--) {
+      let randomInt = Math.floor(Math.random() * i);
+      roundBank[categories[randomInt]] = questionBank[categories[randomInt]];
+      roundCate.push(categories[randomInt]);
+      categories.splice(randomInt, 1);
+  }
+
+  let returnList = [roundBank, roundCate]
+  return returnList;
+};
+
+/*
+Draw sector function
+  Used to actually draw the wheel sectors and fill with the category text
+*/
+function drawSector(sector, i, text) {
+  const ang = arc * i;
+  ctx.save();
+  // COLOR
+  ctx.beginPath();
+  ctx.fillStyle = sector.color;
+  ctx.moveTo(rad, rad);
+  ctx.arc(rad, rad, rad, ang, ang + arc);
+  ctx.lineTo(rad, rad);
+  ctx.fill();
+  // TEXT
+  if (text)
+  {
+    ctx.translate(rad, rad);
+    ctx.rotate(ang + arc / 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 20px sans-serif";
+    ctx.fillText(sector.label, rad - 10, 10);
+    ctx.restore();
+  }
+};
+
+/*
+Rotate function
+  Used to spin the wheel and display the chosen category. Sets up point value selection screen.
+*/
+function rotate() {
+  EL_spin.textContent = "";
+  const sector = sectors[getIndex()];
+  ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
+  EL_spin.style.background = sector.color;
+  categoryDisplay.style.background = sector.color;
+  if (wheelSpun) categoryDisplay.innerHTML = sector.label.bold();
+
+  // Wheel has stopped spinning
+  if (!angVel && wheelSpun)
+  {
+    sleep(1000);
+    category = sector.label;
+    pointValueScreen.style.visibility = 'visible';
+    wheelSpun = false;
+    for (var i = 1; i <= 5; i++)
+    {
+      var PVButton = document.getElementById("PVButton"+i);
+
+      if (!qBank[category][0][i-1])
       {
-        value[0][i] = true;
-      }
-    }
-    setCurrentPlayer(0);
-    // Reset points
-    for (let i = 1; i <= 3; i++)
-    {
-      document.getElementById('player'+i+'Points').innerHTML = "0".bold();
-    }
-  }
-
-  function nextQuestion(){
-    answerScreen.style.visibility = 'hidden';
-    buzzInScreen.style.visibility = 'hidden';
-    spinScreen.style.visibility = 'visible';
-    answerTimer.style.visibility = 'hidden';
-    // Reset answer buttons
-    for (let i = 1; i < 5; i++)
-    {
-      document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
-    }
-    document.getElementById("questionsLeftNumber").innerHTML = "<b>"+numQuestions+"</b>";
-    EL_spin.innerHTML = "SPIN!".bold();
-    EL_spin.style.cursor = "pointer";
-    categoryDisplay.innerText = "";
-  }
-
-  function shuffle(a, b)
-  {
-    return Math.random() > 0.5 ? -1 : 1;
-  }
-
-  function addPoints(playerIndex, originalPoints)
-  {
-    var playerPoints = document.getElementById("player"+playerIndex+"Points");
-    if (parseInt(playerPoints.innerText) + 1 <= originalPoints + pointValue)
-    {
-      playerPoints.innerHTML = (parseInt(playerPoints.innerText) + 1).toString().bold();
-      setTimeout(addPoints, 25, playerIndex, originalPoints);
-    }
-  }
-
-  function subtractPoints(playerIndex, originalPoints)
-  {
-    var playerPoints = document.getElementById("player"+playerIndex+"Points");
-    if (parseInt(playerPoints.innerText) - 1  >= originalPoints - pointValue)
-    {
-      playerPoints.innerHTML = (parseInt(playerPoints.innerText) - 1).toString().bold();
-      setTimeout(subtractPoints, 25, playerIndex, originalPoints);
-    }
-  }
-
-  function setCurrentPlayer(playerIndex)
-  {
-    for (var i = 1; i <= 3; i++)
-    {
-      var playerIcon = document.getElementById("player"+i+"Icon");
-      
-      if (i == playerIndex)
-      {
-        playerIcon.src = "assets/CurrentPlayerIcon.png";
+        PVButton.src = "assets/UsedPointValueButton.png";
+        PVButton.style.cursor = "default";
       }
       else
       {
-        playerIcon.src = "assets/PlayerIcon.png";
-      }
-    }    
-  }
-
-  function findWinner()
-  {
-    var winner = '';
-    var winnerPoints = 0;
-    for (let i = 1; i <= 3; i++)
-    {
-      var currPlayerPoints = Number(document.getElementById('player'+i+'Points').innerText);
-      if (winner == '' || currPlayerPoints > winnerPoints)
-      {
-        winnerPoints = currPlayerPoints;
-        winner = document.getElementById('player'+i+'Name').innerText
-      }
-    }
-    return {winner, winnerPoints};
-  }
-
-
-  function randomize() {
-    const questionBank = {
-        "SOUNDS LIKE TENNIS": [
-            [true, true, true, true, true],
-            [
-              'Ambrose Bierce defined it as "a temporary insanity curable by marriage"',
-              "Likely spot for a potential earthquake",
-              "The money you net from an investment",
-              "In blackjack it can have one of 2 different values",
-              "The operating expenses of running a business"
-            ],
-            [
-              "love",
-              "a fault",
-              "a return",
-              "ace",
-              "overhead"
-            ],
-            [
-              ["love", "hatred", "awkwardness", "shyness"],
-              ["a fault", "a slope", "a berm", "a river"],
-              ["a return", "a profit", "a gross", "a deduction"],
-              ["ace", "king", "queen", "jack"],
-              ["overhead", "payroll", "capital", "liabilities"]
-            ]
-        ],
-        "THAT'S CANADIAN ENTERTAINMENT": [
-            [true, true, true, true, true],
-            [
-              "This hip-hopper's love for Toronto is well known, & a 2018 report said about 5% of the city's annual tourism income was due to him",
-              '"You Oughta Know" this Ottawa-born singer imported Flea & Dave Navarro to play on that song',
-              'This Vancouver native lent his voice to the city\'s public transit in 2018; here\'s a sample: "Get those feet off the seat; my mom might be sitting there one day, come on"',
-              'Canadians starring on this sketch show included Eugene Levy, Catherine O\'Hara & John Candy',
-              'Eve on "Killing Eve", she considered studying journalism but went to Montreal\'s National Theatre School instead'
-            ],
-            [
-              'Drake',
-              'Alanis Morissette',
-              'Seth Rogen',
-              'Second City TV',
-              'Sandra Oh'
-            ],
-            [
-              ["Drake", "Eminem", "Kanye West", "Post Malone"],
-              ["Alanis Morissette", "Celine Dion", "Jessie Reyez", "Nelly Furtado"],
-              ["Seth Rogen", "Ryan Reynolds", "Michael J. Fox", "Michael Bublé"],
-              ["Second City TV", "SNL Québec", "SketchCom", "Super Dave"],
-              ["Sandra Oh", "Jodie Comer", "Fiona Shaw", "Gemma Whelan"]
-            ]
-        ],
-        "TASTY BUSINESS": [
-            [true, true, true, true, true],
-            [
-              "Developer Jef Raskin loved this type of apple so much he named an Apple computer after one",
-              "BB is the stock symbol of this company that today is more into cybersecurity than devices",
-              "Makes sense: BR Standard is a fashion line from this store",
-              "Named for a green sushi condiment, this company calls itself \"the world's hottest cloud storage\"",
-              "This restaurant chain says the only ingredient it uses that's hard to pronounce is the pepper in its name"
-            ],
-            [
-              "a McIntosh",
-              "BlackBerry",
-              "Banana Republic",
-              "Wasabi",
-              "Chipotle"
-            ],
-            [
-              ["a McIntosh", "a Fuji", "a Mutsu", "an Opal"],
-              ["BlackBerry", "Bloomberg", "Best Buy", "BlueBird"],
-              ["Banana Republic", "British Royale", "Blue Ridge", "Burlington Reserve"],
-              ["Wasabi", "Shoyu", "Ichimi", "Karashi"],
-              ["Chipotle", "Banana Republic", "Bojangles", "Chili\'s"]
-            ]
-        ],
-        "SOMEBODY WROTE THAT": [
-            [true, true, true, true, true],
-            [
-              "Melvina Young wrote the greeting card titled \"The Sisterhood\" for this company\'s \"Uplifted & Empowered\" collection",
-              "Raymond K. Price Jr. wrote the first & last words of the Nixon presidency, his first inaugural address & this last public speech",
-              "\"How Great\" is this beloved hymn that began as a Swedish poem by Carl Boberg & has been recorded by Carrie Underwood & Elvis",
-              "Lynell George wrote the album notes for \"Otis Redding Live at\" this club on the Sunset Strip & won a Grammy for the effort",
-              "Newspaper editor Francis Pharcellus Church wrote the 1897 reply to young Virginia O'Hanlon that's known by these 7 words"
-            ],
-            [
-              "Hallmark Cards",
-              "his Resignation",
-              "How Great Thou Art",
-              "the Whisky a Go Go",
-              "Yes, Virginia, there is a Santa Claus"
-            ],
-            [
-              ["Hallmark Cards", "American Greetings", "Quilling Cards", "Nobleworks"],
-              ["his Resignation", "his State of the Union", "his Vietnam War address", "his National Energy Policy"],
-              ["How Great Thou Art", "How Great the Spring Blooms", "How Great Our Love", "How Great Is Our God"],
-              ["the Whisky a Go Go", "Ciro\'s", "the Mocambo", "the Trocadero"],
-              ["Yes, Virginia, there is a Santa Claus", "Yes Virginia, there is an Easter Bunny", "Yes Virginia, there is a tooth fairy", "Yes Virginia, there is a Jack Frost"]
-            ]
-        ],
-        "NO MAN": [
-            [true, true, true, true, true],
-            [
-              "This Babylonian, not messing around with his \"code\": \"if a son strike his father, his hands shall be hewn off\"",
-              "Andrew Volstead gave a big \"no\" with the National this act, which enforced the 18th Amendment",
-              "On April 28, 1789 Fletcher Christian & crew said no to this captain's tough love, sending him off in a boat",
-              "In this 1944 battle named for the shape of opposing lines, U.S. General Anthony McAuliffe replied \"Nuts!\" to a demand for surrender",
-              "Dear Diary, in 1662 he was not a fan of \"A Midsummer Night\'s Dream\", \"which I had never seen before, nor shall ever again\""
-            ],
-            [
-              "Hammurabi",
-              "Prohibition",
-              "Captain Bligh",
-              "Battle of the Bulge",
-              "Samuel Pepys"
-            ],
-            [
-              ["Hammurabi", "Sharia", "Urukagina", "Gentoo"],
-              ["Prohibition", "Slavery", "Voter Discrimination", "Income Tax"],
-              ["Captain Bligh", "Captain Durham", "Captain Yorke", "Captain Rainier"],
-              ["Battle of the Bulge", "Battle of Mill", "Battle of the Coral Sea", "Battle of Slim River"],
-              ["Samuel Pepys", "Cyril Wyche", "John Dryden", "Hermann Ulrici"],
-            ]
-        ],
-        "IS AN ISLAND": [
-            [true, true, true, true, true],
-            [
-              "The Kanmon Undersea Tunnel connects Kyushu with this largest of the 4 main islands of Japan",
-              "Take in the beauty of Hanauma Bay on this island, also known for the totally awesome waves on its North Shore",
-              "One third of Earth's lava flow since 1500 is said to have come from volcanoes in this Atlantic island nation",
-              "Brunei & the 13,500-foot Mount Kinabalu are on this large island that lies on the equator",
-              "Once called Mount Victoria, Tomanivi on Viti Levu is the highest point in this nation"
-            ],
-            [
-              "Honshu",
-              "Oahu",
-              "Iceland",
-              "Borneo",
-              "Fiji"
-            ],
-            [
-              ["Honshu", "Hokkaido", "Shikoku", "Kyushu"],
-              ["Oahu", "Maui", "Lanai", "Kauai"],
-              ["Iceland", "Greenland", "Newfoundland", "Iwo Jima"],
-              ["Borneo", "Tarawa", "Waigeo", "Bioko"],
-              ["Fiji", "Nepal", "Peru", "Bolivia"],
-            ]
-        ],
-        "FIRST DAY ON THE JOB": [
-            [true, true, true, true, true],
-            [
-              "Getting used to the binoculars & keeping an eye out for rip currents are first-day tasks at this summer job",
-              "One-word title of the job seen here: on your first day, don't be nervous, remember your glissando & fingering technique",
-              "New at this gig, Neil Gorsuch embraced life on the cafeteria committee & having to open the door when someone knocks",
-              "You've just got this gig assisting the mixologists; lots of lifting, so don't hurt the body part in the job's name",
-              "You're the new court reporter, dazzle them with your fingers while you operate this intimidating machine"
-            ],
-            [
-              "a lifeguard",
-              "flautist",
-              "a Supreme Court justice",
-              "barback",
-              "stenography machine"
-            ],
-            [
-              ["a lifeguard", "a server", "a babysitter", "a golf caddy"],
-              ["flautist", "pianist", "masseuse", "manicurist"],
-              ["a Supreme Court justice", "a Congressman", "a Superintendent", "a University Dean"],
-              ["barback", "chemist", "producer", "legislator"],
-              ["stenography machine", "type writer", "computer", "tablet"]
-            ]
-        ],
-        "FACTS ABOUT ANIMALS": [
-            [true, true, true, true, true],
-            [
-              "The right or bowhead this gets tangled in fishing nets, which can stunt growth, causing the species to be shorter than its typical 52 feet",
-              "The 2-toed one of these can live up to 20 years, most of it upside down in the canopy of the rainforest",
-              "When faced with danger, certain ducks, snakes & mammals do this, also called thanatosis",
-              "The kestrel is also known as this type of hawk, after the nice little bird it's looking around for here",
-              "Sweden's only wild feline is this short-tailed cat that's able to bring down much larger animals, like reindeer & roe deer"
-            ],
-            [
-              "a whale",
-              "a sloth",
-              "play dead",
-              "sparrow hawk",
-              "lynx"
-            ],
-            [
-              ["a whale", "a giant squid", "a shark", "an octapus"],
-              ["a sloth", "a koala bear", "a bat", "an orangutan"],
-              ["play dead", "freeze", "run away", "attack"],
-              ["sparrow hawk", "finch hawk", "starling hawk", "parrot hawk"],
-              ["lynx", "bobcats", "servals", "ocelots"]
-            ]
-        ]
-    };
-    
-    let roundBank = {};
-    let roundCate = [];
-    let categories = Object.keys(questionBank);
-    const NUM_CATEGORIES_CHOSEN = 6;
-
-    for (let i = NUM_CATEGORIES_CHOSEN; i > 0; i--) {
-        let randomInt = Math.floor(Math.random() * i);
-        roundBank[categories[randomInt]] = questionBank[categories[randomInt]];
-        roundCate.push(categories[randomInt]);
-        categories.splice(randomInt, 1);
-    }
-
-    let returnList = [roundBank, roundCate]
-    return returnList;
-  };
-
-  function drawSector(sector, i, text) {
-    const ang = arc * i;
-    ctx.save();
-    // COLOR
-    ctx.beginPath();
-    ctx.fillStyle = sector.color;
-    ctx.moveTo(rad, rad);
-    ctx.arc(rad, rad, rad, ang, ang + arc);
-    ctx.lineTo(rad, rad);
-    ctx.fill();
-    // TEXT
-    if (text)
-    {
-      ctx.translate(rad, rad);
-      ctx.rotate(ang + arc / 2);
-      ctx.textAlign = "right";
-      ctx.fillStyle = "#000000";
-      ctx.font = "bold 20px sans-serif";
-      ctx.fillText(sector.label, rad - 10, 10);
-      ctx.restore();
-    }
-  };
-
-  function rotate() {
-    EL_spin.textContent = "";
-    const sector = sectors[getIndex()];
-    ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
-    EL_spin.style.background = sector.color;
-    categoryDisplay.style.background = sector.color;
-    if (wheelSpun) categoryDisplay.innerHTML = sector.label.bold();
-    // Wheel has stopped spinning
-    if (!angVel && wheelSpun)
-    {
-      sleep(1000);
-      category = sector.label;
-      pointValueScreen.style.visibility = 'visible';
-      wheelSpun = false;
-      for (var i = 1; i <= 5; i++)
-      {
-        var PVButton = document.getElementById("PVButton"+i);
-
-        if (!qBank[category][0][i-1])
-        {
-          PVButton.src = "assets/UsedPointValueButton.png";
-          PVButton.style.cursor = "default";
-        }
-        else
-        {
-          PVButton.src = "assets/UnusedPointValueButton.png";
-          PVButton.style.cursor = "pointer";
-        }
+        PVButton.src = "assets/UnusedPointValueButton.png";
+        PVButton.style.cursor = "pointer";
       }
     }
   }
+}
 
+/*
+Frame function
+  Adjusts the angVel to slow the wheel and eventually stop the wheel.
+*/
 function frame() {
     if (!angVel) return;
     angVel *= friction; // Decrement velocity by friction
@@ -577,11 +704,20 @@ function frame() {
     rotate();
 }
 
+/*
+Engine function
+  The wheel's constant engine check to know to rotate when angVel is non-zero.
+*/
 function engine() {
     frame();
     requestAnimationFrame(engine)
 }
 
+/*
+Empty check function
+  Check whether a category is empty.
+  *Not implemented yet*
+*/
 function isEmpty(category)
 {
   var emptyCategory = true;
@@ -609,13 +745,15 @@ function isEmpty(category)
   pointValueScreen.style.visibility = 'hidden';
   buzzInScreen.style.visibility = 'hidden';
   answerScreen.style.visibility = 'hidden';
+
+  // Draw wheel
   for (var i = 0; i < sectors.length; i++)
   {
     drawSector(sectors[i], i, false);
   }
   rotate(); // Initial rotation
   engine(); // Start engine
-  if (!muted) themeMusic.play();
+  if (!muted) themeMusic.play(); // Start lobby music
 
   //-------------------------Events-------------------------//
 
@@ -679,9 +817,11 @@ function isEmpty(category)
     errorQuestionNumber = document.getElementById("errorQuestionNumber");
 
     // Validate input
-    if (questionNumberInput.value > 0 && questionNumberInput.value <= 30)
+    if (questionNumberInput.value > 0 && questionNumberInput.value <= 30) // Good input, continue
     {
       fadeOutAudio(themeMusic);
+
+      // Swap to wheel spin screen
       numQuestions = questionNumberInput.value;
       errorQuestionNumber.style.visibility = "hidden";
       lobbyScreen.style.visibility = 'hidden';
@@ -695,11 +835,11 @@ function isEmpty(category)
       playerList.style.visibility = 'visible';
       questionsLeft.style.visibility = 'visible';
 
-      document.getElementById("questionsLeftNumber").innerHTML = "<b>"+numQuestions+"</b>";
+      questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
 
-      setCurrentPlayer(1);
+      setCurrentPlayer(1); // This will need to change when implementing networking
     }
-    else
+    else // Bad input, display error
     {
       errorQuestionNumber.style.visibility = "visible";
     }
@@ -707,12 +847,12 @@ function isEmpty(category)
 
   // Spin Button Pressed
   EL_spin.addEventListener('click', () => {
-    if (EL_spin.textContent == "SPIN!")
+    if (EL_spin.textContent == "SPIN!") // Validate the wheel can currently be spun
     {
       categoryDisplay.innerHTML = "";
       EL_spin.textContent == ""
       EL_spin.style.cursor = "default";
-      if (!angVel)
+      if (!angVel) // Make sure the wheel isn't already spinning
       {
         wheelSpun = true;
         angVel = rand(0.25, 0.35);
@@ -725,140 +865,55 @@ function isEmpty(category)
   PV1Button.addEventListener('click', () => {
     if (PV1Button.style.cursor == "pointer")
     {
+      PV1Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 10;
-      pointValueScreen.style.visibility = 'hidden';
-      buzzInScreen.style.visibility = 'visible';
-      spinScreen.style.visibility = 'hidden';
-      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-      var question = qBank[category][1][0];
-      questionDisplay.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.style.color = "black";
 
-      var answers = qBank[category][3][0];
-      correctAnswer = qBank[category][2][0];
-      answers = answers.sort(shuffle);
-
-      answer1Text.innerHTML = answers[0];
-      answer2Text.innerHTML = answers[1];
-      answer3Text.innerHTML = answers[2];
-      answer4Text.innerHTML = answers[3];
-      
-      buzzInTimer.innerHTML = buzzInTimerLength.bold();
-      setTimeout(decrementBuzzInTimer, 1000);
+      answerTimer.innerHTML = PVtimerLength.bold();
+      setTimeout(decrementQuestionTimer, 1000, 0);
     }
   });
   // PV2 Button Pressed
   PV2Button.addEventListener('click', () => {
     if (PV2Button.style.cursor == "pointer")
     {
+      PV2Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 20;
-      pointValueScreen.style.visibility = 'hidden';
-      buzzInScreen.style.visibility = 'visible';
-      spinScreen.style.visibility = 'hidden';
-      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-      var question = qBank[category][1][1];
-      questionDisplay.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.style.color = "black";
 
-      var answers = qBank[category][3][1];
-      correctAnswer = qBank[category][2][1];
-      answers = answers.sort(shuffle);
-
-      answer1Text.innerHTML = answers[0];
-      answer2Text.innerHTML = answers[1];
-      answer3Text.innerHTML = answers[2];
-      answer4Text.innerHTML = answers[3];
-
-      buzzInTimer.innerHTML = buzzInTimerLength.bold();
-      setTimeout(decrementBuzzInTimer, 1000);
+      answerTimer.innerHTML = PVtimerLength.bold();
+      setTimeout(decrementQuestionTimer, 1000, 1);
     }
   });
   // PV3 Button Pressed
   PV3Button.addEventListener('click', () => {
     if (PV3Button.style.cursor == "pointer")
     {
+      PV3Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 30;
-      pointValueScreen.style.visibility = 'hidden';
-      buzzInScreen.style.visibility = 'visible';
-      spinScreen.style.visibility = 'hidden';
-      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-      var question = qBank[categoryDisplay.textContent][1][2];
-      questionDisplay.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.style.color = "black";
 
-      var answers = qBank[category][3][2];
-      correctAnswer = qBank[category][2][2];
-      answers = answers.sort(shuffle);
-
-      answer1Text.innerHTML = answers[0];
-      answer2Text.innerHTML = answers[1];
-      answer3Text.innerHTML = answers[2];
-      answer4Text.innerHTML = answers[3];
-
-      buzzInTimer.innerHTML = buzzInTimerLength.bold();
-      setTimeout(decrementBuzzInTimer, 1000);
+      answerTimer.innerHTML = PVtimerLength.bold();
+      setTimeout(decrementQuestionTimer, 1000, 2);
     }
   });
   // PV4 Button Pressed
   PV4Button.addEventListener('click', () => {
     if (PV4Button.style.cursor == "pointer")
     {
+      PV4Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 40;
-      pointValueScreen.style.visibility = 'hidden';
-      buzzInScreen.style.visibility = 'visible';
-      spinScreen.style.visibility = 'hidden';
-      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-      var question = qBank[categoryDisplay.textContent][1][3];
-      questionDisplay.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.style.color = "black";
 
-      var answers = qBank[category][3][3];
-      correctAnswer = qBank[category][2][3];
-      answers = answers.sort(shuffle);
-
-      answer1Text.innerHTML = answers[0];
-      answer2Text.innerHTML = answers[1];
-      answer3Text.innerHTML = answers[2];
-      answer4Text.innerHTML = answers[3];
-
-      buzzInTimer.innerHTML = buzzInTimerLength.bold();
-      setTimeout(decrementBuzzInTimer, 1000);
+      answerTimer.innerHTML = PVtimerLength.bold();
+      setTimeout(decrementQuestionTimer, 1000, 3);
     }
   });
   // PV5 Button Pressed
   PV5Button.addEventListener('click', () => {
     if (PV5Button.style.cursor == "pointer")
     {
+      PV5Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 50;
-      pointValueScreen.style.visibility = 'hidden';
-      buzzInScreen.style.visibility = 'visible';
-      spinScreen.style.visibility = 'hidden';
-      PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
-      PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
-      var question = qBank[categoryDisplay.textContent][1][4];
-      questionDisplay.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.innerHTML = "<b>"+question+"</b>";
-      questionDisplay2.style.color = "black";
 
-      var answers = qBank[category][3][4];
-      correctAnswer = qBank[category][2][4];
-      answers = answers.sort(shuffle);
-
-      answer1Text.innerHTML = answers[0];
-      answer2Text.innerHTML = answers[1];
-      answer3Text.innerHTML = answers[2];
-      answer4Text.innerHTML = answers[3];
-      
-      buzzInTimer.innerHTML = buzzInTimerLength.bold();
-      setTimeout(decrementBuzzInTimer, 1000);
+      answerTimer.innerHTML = PVtimerLength.bold();
+      setTimeout(decrementQuestionTimer, 1000, 4);
     }
   });
 
@@ -883,7 +938,7 @@ function isEmpty(category)
     if (!muted) jeopardyMusic.play();
 
     answerTimer.innerHTML = answerTimerLength.bold();
-    setTimeout(decrementQuestionTimer, 1000);
+    setTimeout(decrementQuestionTimer, 1000, -1);
   });
 
   //----------Answer Buttons----------//
