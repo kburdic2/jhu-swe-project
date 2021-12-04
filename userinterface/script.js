@@ -52,6 +52,7 @@
   var numQuestions = 0;
   var pointValue = 0;
 
+  var adjustingPoints = false;
   var category;
   var correctAnswer;
 
@@ -180,7 +181,7 @@ function decrementQuestionTimer(PVindex){
   {
     setTimeout(decrementQuestionTimer, 1000, PVindex);
   }
-  else if (parseInt(answerTimer.textContent) == 0 && answerScreen.style.visibility == 'visible') // Timer expired on answer screen
+  else if (parseInt(answerTimer.textContent) == 0 && answerScreen.style.visibility == 'visible' && !adjustingPoints) // Timer expired on answer screen
   {
     questionDisplay2.innerHTML = "Timer expired!".bold();
     questionDisplay2.style.color = "red";
@@ -357,11 +358,16 @@ Add points function
 */
 function addPoints(playerIndex, originalPoints)
 {
+  adjustingPoints = true;
   var playerPoints = document.getElementById("player"+playerIndex+"Points");
   if (parseInt(playerPoints.textContent) + 1 <= originalPoints + pointValue)
   {
     playerPoints.innerHTML = (parseInt(playerPoints.textContent) + 1).toString().bold();
     setTimeout(addPoints, 25, playerIndex, originalPoints);
+  }
+  else
+  {
+    adjustingPoints = false;
   }
 }
 
@@ -371,11 +377,17 @@ Subtract points function
 */
 function subtractPoints(playerIndex, originalPoints)
 {
+  adjustingPoints = true;
   var playerPoints = document.getElementById("player"+playerIndex+"Points");
   if (parseInt(playerPoints.textContent) - 1  >= originalPoints - pointValue)
   {
-    playerPoints.innerHTML = (parseInt(playerPoints.textContent) - 1).toString().bold();
+    playerPoints.textContent = (parseInt(playerPoints.textContent) - 1).toString();
+    playerPoints.innerHTML = playerPoints.innerHTML.bold();
     setTimeout(subtractPoints, 25, playerIndex, originalPoints);
+  }
+  else
+  {
+    adjustingPoints = false;
   }
 }
 
@@ -1041,7 +1053,7 @@ function isEmpty(category)
         }
 
         var playerIndex = 1;
-        addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
+        setTimeout(addPoints, 100, playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
       }
       else
       {
