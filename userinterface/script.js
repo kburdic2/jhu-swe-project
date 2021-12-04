@@ -143,13 +143,16 @@ Buzz in timer function
 */
 function decrementBuzzInTimer(){
   buzzInTimer.textContent = (parseInt(buzzInTimer.textContent) - 1).toString();
+  buzzInTimer.innerHTML = buzzInTimer.innerHTML.bold();
   if (parseInt(buzzInTimer.textContent) > 0)
   {
     setTimeout(decrementBuzzInTimer, 1000);
   }
   else if (parseInt(buzzInTimer.textContent) == 0 && buzzInScreen.style.visibility == 'visible') // Timer expired on buzz in screen
   {
+    buzzerButton.style.cursor = "default";
     answerDisplay.textContent = "Answer: " + correctAnswer;
+    answerDisplay.innerHTML = answerDisplay.innerHTML.bold();
 
     // Decrement questions
     numQuestions = numQuestions - 1;
@@ -171,6 +174,7 @@ Question timer function
 */
 function decrementQuestionTimer(PVindex){
   answerTimer.innerText = (parseInt(answerTimer.textContent) - 1).toString();
+  answerTimer.innerHTML = answerTimer.innerHTML.bold();
   if (parseInt(answerTimer.textContent) > 0)
   {
     setTimeout(decrementQuestionTimer, 1000, PVindex);
@@ -179,15 +183,16 @@ function decrementQuestionTimer(PVindex){
   {
     questionDisplay2.innerHTML = "Timer expired!".bold();
     questionDisplay2.style.color = "red";
-    addPoints(-1*pointValue, 1);
+    var playerIndex = 1;
+    subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
     // Display correct answer
     for (var i = 1; i < 5; i++)
     {
       var currAnswer = document.getElementById("answer"+i+"Text");
+      currAnswer.style.cursor = "default";
       if (currAnswer.innerHTML == correctAnswer)
       {
         document.getElementById("answer"+i+"Button").src = "assets/CorrectAnswerButton.png";
-        break;
       }
     }
     buzzInTimer.innerHTML = "8";
@@ -202,7 +207,7 @@ function decrementQuestionTimer(PVindex){
     jeopardyMusic.pause();
     jeopardyMusic.currentTime = 0.5; // Better start time for music
   }
-  else if (parseInt(answerTimer.textContent) == 0 && pointValueScreen.style.visibility == 'visible') // Timer expired on spin screen when displaying point value
+  else if (parseInt(answerTimer.textContent) == 0 && pointValueScreen.style.visibility == 'visible' && PVindex >= 0) // Timer expired on spin screen when displaying point value
   {
     pointValueScreen.style.visibility = 'hidden';
     buzzInScreen.style.visibility = 'visible';
@@ -210,12 +215,16 @@ function decrementQuestionTimer(PVindex){
     PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
     PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
 
+    console.log(PVindex); // testing...
+    console.log(category);
     var question = qBank[category][1][PVindex];
+    console.log(question);
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.style.color = "black";
 
     var answers = qBank[category][3][PVindex];
+    console.log(answers);
     correctAnswer = qBank[category][2][PVindex];
     answers = answers.sort(shuffle);
 
@@ -348,9 +357,9 @@ Add points function
 function addPoints(playerIndex, originalPoints)
 {
   var playerPoints = document.getElementById("player"+playerIndex+"Points");
-  if (parseInt(playerPoints.innerText) + 1 <= originalPoints + pointValue)
+  if (parseInt(playerPoints.textContent) + 1 <= originalPoints + pointValue)
   {
-    playerPoints.innerHTML = (parseInt(playerPoints.innerText) + 1).toString().bold();
+    playerPoints.innerHTML = (parseInt(playerPoints.textContent) + 1).toString().bold();
     setTimeout(addPoints, 25, playerIndex, originalPoints);
   }
 }
@@ -362,9 +371,9 @@ Subtract points function
 function subtractPoints(playerIndex, originalPoints)
 {
   var playerPoints = document.getElementById("player"+playerIndex+"Points");
-  if (parseInt(playerPoints.innerText) - 1  >= originalPoints - pointValue)
+  if (parseInt(playerPoints.textContent) - 1  >= originalPoints - pointValue)
   {
-    playerPoints.innerHTML = (parseInt(playerPoints.innerText) - 1).toString().bold();
+    playerPoints.innerHTML = (parseInt(playerPoints.textContent) - 1).toString().bold();
     setTimeout(subtractPoints, 25, playerIndex, originalPoints);
   }
 }
@@ -868,6 +877,8 @@ function isEmpty(category)
       PV1Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 10;
 
+      buzzerButton.style.cursor = "pointer";
+
       answerTimer.innerHTML = PVtimerLength.bold();
       setTimeout(decrementQuestionTimer, 1000, 0);
     }
@@ -878,6 +889,8 @@ function isEmpty(category)
     {
       PV2Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 20;
+
+      buzzerButton.style.cursor = "pointer";
 
       answerTimer.innerHTML = PVtimerLength.bold();
       setTimeout(decrementQuestionTimer, 1000, 1);
@@ -890,6 +903,8 @@ function isEmpty(category)
       PV3Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 30;
 
+      buzzerButton.style.cursor = "pointer";
+
       answerTimer.innerHTML = PVtimerLength.bold();
       setTimeout(decrementQuestionTimer, 1000, 2);
     }
@@ -900,6 +915,8 @@ function isEmpty(category)
     {
       PV4Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 40;
+
+      buzzerButton.style.cursor = "pointer";
 
       answerTimer.innerHTML = PVtimerLength.bold();
       setTimeout(decrementQuestionTimer, 1000, 3);
@@ -912,6 +929,8 @@ function isEmpty(category)
       PV5Button.src = "assets/SelectedPointValueButton.png";
       pointValue = 50;
 
+      buzzerButton.style.cursor = "pointer";
+
       answerTimer.innerHTML = PVtimerLength.bold();
       setTimeout(decrementQuestionTimer, 1000, 4);
     }
@@ -919,55 +938,78 @@ function isEmpty(category)
 
   // Buzz-In Button Pressed
   buzzerButton.addEventListener('click', () => {
-    buzzerAudio.currentTime = 0.1;
-    if (!muted) buzzerAudio.play();
-    buzzInScreen.style.visibility = 'hidden';
-    answerScreen.style.visibility = 'visible';
-    spinScreen.style.visibility = 'hidden';
-    answerTimer.style.visibility = 'visible';
+    if (buzzerButton.style.cursor == "pointer")
+    {
+      buzzerAudio.currentTime = 0.1;
+      if (!muted) buzzerAudio.play();
 
-    qBank[category][0][(pointValue/10)-1] = false;
+      buzzInScreen.style.visibility = 'hidden';
+      answerScreen.style.visibility = 'visible';
+      spinScreen.style.visibility = 'hidden';
+      answerTimer.style.visibility = 'visible';
 
-    numQuestions = numQuestions - 1;
+      qBank[category][0][(pointValue/10)-1] = false;
 
-    setCurrentPlayer(1);
+      numQuestions = numQuestions - 1;
 
-    sleep(1000);
+      setCurrentPlayer(1);
 
-    jeopardyMusic.currentTime = 0.5;
-    if (!muted) jeopardyMusic.play();
+      sleep(1000);
 
-    answerTimer.innerHTML = answerTimerLength.bold();
-    setTimeout(decrementQuestionTimer, 1000, -1);
+      // Enable answer buttons
+      for (var i = 1; i < 5; i++)
+      {
+        var currAnswer = document.getElementById("answer"+i+"Button");
+        currAnswer.style.cursor = "pointer";
+      }
+
+      jeopardyMusic.currentTime = 0.5;
+      if (!muted) jeopardyMusic.play();
+
+      answerTimer.innerHTML = answerTimerLength.bold();
+      setTimeout(decrementQuestionTimer, 1000, -1);
+    }
   });
 
   //----------Answer Buttons----------//
   // Answer 1 Pressed
   answer1Button.addEventListener('click', () => {
-    jeopardyMusic.pause();
-    if (answer1Text.innerHTML == correctAnswer)
+    if (answer1Button.style.cursor == "pointer")
     {
-      applauseAudio.currentTime = 0.5;
-      if (!muted) applauseAudio.play();
-      answer1Button.src = "assets/CorrectAnswerButton.png";
-      var playerIndex = 1;
-      addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
-    }
-    else
-    {
-      awwAudio.currentTime = 0.5;
-      if (!muted) awwAudio.play();
-      answer1Button.src = "assets/IncorrectAnswerButton.png";
-      var playerIndex = 1;
-      subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
-      // Display correct answer
-      for (var i = 1; i < 5; i++)
+      jeopardyMusic.pause();
+      if (answer1Text.innerHTML == correctAnswer)
       {
-        var currAnswer = document.getElementById("answer"+i+"Text");
-        if (currAnswer.innerHTML == correctAnswer)
+        applauseAudio.currentTime = 0.5;
+        if (!muted) applauseAudio.play();
+        answer1Button.src = "assets/CorrectAnswerButton.png";
+
+        // Disable answer buttons
+        for (var i = 1; i < 5; i++)
         {
-          document.getElementById("answer"+i+"Button").src = "assets/CorrectAnswerButton.png";
-          break;
+          var currAnswer = document.getElementById("answer"+i+"Button");
+          currAnswer.style.cursor = "default";
+        }
+
+        var playerIndex = 1;
+        addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
+      }
+      else
+      {
+        awwAudio.currentTime = 0.5;
+        if (!muted) awwAudio.play();
+        answer1Button.src = "assets/IncorrectAnswerButton.png";
+        var playerIndex = 1;
+        subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
+        // Display correct answer and disable answer buttons
+        for (var i = 1; i < 5; i++)
+        {
+          var currAnswer = document.getElementById("answer"+i+"Button");
+          var currAnswerText = document.getElementById("answer"+i+"Text");
+          currAnswer.style.cursor = "default";
+          if (currAnswerText.textContent == correctAnswer)
+          {
+            currAnswer.src = "assets/CorrectAnswerButton.png";
+          }
         }
       }
     }
@@ -985,30 +1027,42 @@ function isEmpty(category)
   });
   // Answer 2 Pressed
   answer2Button.addEventListener('click', () => {
-    jeopardyMusic.pause();
-    if (answer2Text.innerHTML == correctAnswer)
+    if (answer2Button.style.cursor == "pointer")
     {
-      applauseAudio.currentTime = 0.5;
-      if (!muted) applauseAudio.play();
-      answer2Button.src = "assets/CorrectAnswerButton.png";
-      var playerIndex = 1;
-      addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
-    }
-    else
-    {
-      awwAudio.currentTime = 0.5;
-      if (!muted) awwAudio.play();
-      answer2Button.src = "assets/IncorrectAnswerButton.png";
-      var playerIndex = 1;
-      subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
-      // Display correct answer
-      for (let i = 1; i < 5; i++)
+      jeopardyMusic.pause();
+      if (answer2Text.innerHTML == correctAnswer)
       {
-        var currAnswer = document.getElementById("answer"+i+"Text");
-        if (currAnswer.innerHTML == correctAnswer)
+        applauseAudio.currentTime = 0.5;
+        if (!muted) applauseAudio.play();
+        answer2Button.src = "assets/CorrectAnswerButton.png";
+
+        // Disable answer buttons
+        for (var i = 1; i < 5; i++)
         {
-          document.getElementById("answer"+i+"Button").src = "assets/CorrectAnswerButton.png";
-          break;
+          var currAnswer = document.getElementById("answer"+i+"Text");
+          currAnswer.style.cursor = "default";
+        }
+        
+        var playerIndex = 1;
+        addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
+      }
+      else
+      {
+        awwAudio.currentTime = 0.5;
+        if (!muted) awwAudio.play();
+        answer2Button.src = "assets/IncorrectAnswerButton.png";
+        var playerIndex = 1;
+        subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
+        // Display correct answer and disable answer buttons
+        for (var i = 1; i < 5; i++)
+        {
+          var currAnswer = document.getElementById("answer"+i+"Button");
+          var currAnswerText = document.getElementById("answer"+i+"Text");
+          currAnswer.style.cursor = "default";
+          if (currAnswerText.textContent == correctAnswer)
+          {
+            currAnswer.src = "assets/CorrectAnswerButton.png";
+          }
         }
       }
     }
@@ -1026,30 +1080,42 @@ function isEmpty(category)
   });
   // Answer 3 Pressed
   answer3Button.addEventListener('click', () => {
-    jeopardyMusic.pause();
-    if (answer3Text.innerHTML == correctAnswer)
+    if (answer3Button.style.cursor == "pointer")
     {
-      applauseAudio.currentTime = 0.5;
-      if (!muted) applauseAudio.play();
-      answer3Button.src = "assets/CorrectAnswerButton.png";
-      var playerIndex = 1;
-      addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
-    }
-    else
-    {
-      awwAudio.currentTime = 0.5;
-      if (!muted) awwAudio.play();
-      answer3Button.src = "assets/IncorrectAnswerButton.png";
-      var playerIndex = 1;
-      subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
-      // Display correct answer
-      for (let i = 1; i < 5; i++)
+      jeopardyMusic.pause();
+      if (answer3Text.innerHTML == correctAnswer)
       {
-        var currAnswer = document.getElementById("answer"+i+"Text");
-        if (currAnswer.innerHTML == correctAnswer)
+        applauseAudio.currentTime = 0.5;
+        if (!muted) applauseAudio.play();
+        answer3Button.src = "assets/CorrectAnswerButton.png";
+
+        // Disable answer buttons
+        for (var i = 1; i < 5; i++)
         {
-          document.getElementById("answer"+i+"Button").src = "assets/CorrectAnswerButton.png";
-          break;
+          var currAnswer = document.getElementById("answer"+i+"Text");
+          currAnswer.style.cursor = "default";
+        }
+        
+        var playerIndex = 1;
+        addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
+      }
+      else
+      {
+        awwAudio.currentTime = 0.5;
+        if (!muted) awwAudio.play();
+        answer3Button.src = "assets/IncorrectAnswerButton.png";
+        var playerIndex = 1;
+        subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
+        // Display correct answer and disable answer buttons
+        for (var i = 1; i < 5; i++)
+        {
+          var currAnswer = document.getElementById("answer"+i+"Button");
+          var currAnswerText = document.getElementById("answer"+i+"Text");
+          currAnswer.style.cursor = "default";
+          if (currAnswerText.textContent == correctAnswer)
+          {
+            currAnswer.src = "assets/CorrectAnswerButton.png";
+          }
         }
       }
     }
@@ -1067,30 +1133,42 @@ function isEmpty(category)
   });
   // Answer 4 Pressed
   answer4Button.addEventListener('click', () => {
-    jeopardyMusic.pause();
-    if (answer4Text.innerHTML == correctAnswer)
+    if (answer4Button.style.cursor == "pointer")
     {
-      applauseAudio.currentTime = 0.5;
-      if (!muted) applauseAudio.play();
-      answer4Button.src = "assets/CorrectAnswerButton.png";
-      var playerIndex = 1;
-      addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
-    }
-    else
-    {
-      awwAudio.currentTime = 0.5;
-      if (!muted) awwAudio.play();
-      answer4Button.src = "assets/IncorrectAnswerButton.png";
-      var playerIndex = 1;
-      subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").innerText));
-      // Display correct answer
-      for (let i = 1; i < 5; i++)
+      jeopardyMusic.pause();
+      if (answer4Text.innerHTML == correctAnswer)
       {
-        var currAnswer = document.getElementById("answer"+i+"Text");
-        if (currAnswer.innerHTML == correctAnswer)
+        applauseAudio.currentTime = 0.5;
+        if (!muted) applauseAudio.play();
+        answer4Button.src = "assets/CorrectAnswerButton.png";
+
+        // Disable answer buttons
+        for (var i = 1; i < 5; i++)
         {
-          document.getElementById("answer"+i+"Button").src = "assets/CorrectAnswerButton.png";
-          break;
+          var currAnswer = document.getElementById("answer"+i+"Text");
+          currAnswer.style.cursor = "default";
+        }
+        
+        var playerIndex = 1;
+        addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
+      }
+      else
+      {
+        awwAudio.currentTime = 0.5;
+        if (!muted) awwAudio.play();
+        answer4Button.src = "assets/IncorrectAnswerButton.png";
+        var playerIndex = 1;
+        subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
+        // Display correct answer and disable answer buttons
+        for (var i = 1; i < 5; i++)
+        {
+          var currAnswer = document.getElementById("answer"+i+"Button");
+          var currAnswerText = document.getElementById("answer"+i+"Text");
+          currAnswer.style.cursor = "default";
+          if (currAnswerText.textContent == correctAnswer)
+          {
+            currAnswer.src = "assets/CorrectAnswerButton.png";
+          }
         }
       }
     }
