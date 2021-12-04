@@ -173,8 +173,9 @@ Question timer function
   This function is also used for the point value 3 second timer.
 */
 function decrementQuestionTimer(PVindex){
-  answerTimer.innerText = (parseInt(answerTimer.textContent) - 1).toString();
+  answerTimer.textContent = (parseInt(answerTimer.textContent) - 1).toString();
   answerTimer.innerHTML = answerTimer.innerHTML.bold();
+  console.log(answerTimer.textContent);
   if (parseInt(answerTimer.textContent) > 0)
   {
     setTimeout(decrementQuestionTimer, 1000, PVindex);
@@ -207,7 +208,7 @@ function decrementQuestionTimer(PVindex){
     jeopardyMusic.pause();
     jeopardyMusic.currentTime = 0.5; // Better start time for music
   }
-  else if (parseInt(answerTimer.textContent) == 0 && pointValueScreen.style.visibility == 'visible' && PVindex >= 0) // Timer expired on spin screen when displaying point value
+  else if (parseInt(answerTimer.textContent) == 0 && PVindex >= 0) // Timer expired on spin screen when displaying point value
   {
     pointValueScreen.style.visibility = 'hidden';
     buzzInScreen.style.visibility = 'visible';
@@ -861,6 +862,14 @@ function isEmpty(category)
       categoryDisplay.innerHTML = "";
       EL_spin.textContent == ""
       EL_spin.style.cursor = "default";
+
+      // Enable PV buttons
+      for (var i = 1; i <= 5; i++)
+      {
+        var currButton = document.getElementById("PVButton"+i);
+        currButton.style.cursor = "pointer";
+      }
+
       if (!angVel) // Make sure the wheel isn't already spinning
       {
         wheelSpun = true;
@@ -879,7 +888,15 @@ function isEmpty(category)
 
       buzzerButton.style.cursor = "pointer";
 
-      answerTimer.innerHTML = PVtimerLength.bold();
+      // Disable PV buttons
+      for (var i = 1; i <= 5; i++)
+      {
+        var currButton = document.getElementById("PVButton"+i);
+        currButton.style.cursor = "default";
+      }
+
+      answerTimer.textContent = PVtimerLength;
+      answerTimer.innerHTML = answerTimer.innerHTML.bold();
       setTimeout(decrementQuestionTimer, 1000, 0);
     }
   });
@@ -892,7 +909,15 @@ function isEmpty(category)
 
       buzzerButton.style.cursor = "pointer";
 
-      answerTimer.innerHTML = PVtimerLength.bold();
+      // Disable PV buttons
+      for (var i = 1; i <= 5; i++)
+      {
+        var currButton = document.getElementById("PVButton"+i);
+        currButton.style.cursor = "default";
+      }
+
+      answerTimer.textContent = PVtimerLength;
+      answerTimer.innerHTML = answerTimer.innerHTML.bold();
       setTimeout(decrementQuestionTimer, 1000, 1);
     }
   });
@@ -905,7 +930,15 @@ function isEmpty(category)
 
       buzzerButton.style.cursor = "pointer";
 
-      answerTimer.innerHTML = PVtimerLength.bold();
+      // Disable PV buttons
+      for (var i = 1; i <= 5; i++)
+      {
+        var currButton = document.getElementById("PVButton"+i);
+        currButton.style.cursor = "default";
+      }
+
+      answerTimer.textContent = PVtimerLength;
+      answerTimer.innerHTML = answerTimer.innerHTML.bold();
       setTimeout(decrementQuestionTimer, 1000, 2);
     }
   });
@@ -918,7 +951,15 @@ function isEmpty(category)
 
       buzzerButton.style.cursor = "pointer";
 
-      answerTimer.innerHTML = PVtimerLength.bold();
+      // Disable PV buttons
+      for (var i = 1; i <= 5; i++)
+      {
+        var currButton = document.getElementById("PVButton"+i);
+        currButton.style.cursor = "default";
+      }
+
+      answerTimer.textContent = PVtimerLength;
+      answerTimer.innerHTML = answerTimer.innerHTML.bold();
       setTimeout(decrementQuestionTimer, 1000, 3);
     }
   });
@@ -931,7 +972,15 @@ function isEmpty(category)
 
       buzzerButton.style.cursor = "pointer";
 
-      answerTimer.innerHTML = PVtimerLength.bold();
+      // Disable PV buttons
+      for (var i = 1; i <= 5; i++)
+      {
+        var currButton = document.getElementById("PVButton"+i);
+        currButton.style.cursor = "default";
+      }
+
+      answerTimer.textContent = PVtimerLength;
+      answerTimer.innerHTML = answerTimer.innerHTML.bold();
       setTimeout(decrementQuestionTimer, 1000, 4);
     }
   });
@@ -976,6 +1025,7 @@ function isEmpty(category)
   answer1Button.addEventListener('click', () => {
     if (answer1Button.style.cursor == "pointer")
     {
+      answerTimer.textContent = "1"; // Stop the timer so when we re-use it for the point value display, it won't glitch and halt the game
       jeopardyMusic.pause();
       if (answer1Text.innerHTML == correctAnswer)
       {
@@ -1029,6 +1079,7 @@ function isEmpty(category)
   answer2Button.addEventListener('click', () => {
     if (answer2Button.style.cursor == "pointer")
     {
+      answerTimer.textContent = "1"; // Stop the timer so when we re-use it for the point value display, it won't glitch and halt the game
       jeopardyMusic.pause();
       if (answer2Text.innerHTML == correctAnswer)
       {
@@ -1082,6 +1133,7 @@ function isEmpty(category)
   answer3Button.addEventListener('click', () => {
     if (answer3Button.style.cursor == "pointer")
     {
+      answerTimer.textContent = "1"; // Stop the timer so when we re-use it for the point value display, it won't glitch and halt the game
       jeopardyMusic.pause();
       if (answer3Text.innerHTML == correctAnswer)
       {
@@ -1135,6 +1187,7 @@ function isEmpty(category)
   answer4Button.addEventListener('click', () => {
     if (answer4Button.style.cursor == "pointer")
     {
+      answerTimer.textContent = "1"; // Stop the timer so when we re-use it for the point value display, it won't glitch and halt the game
       jeopardyMusic.pause();
       if (answer4Text.innerHTML == correctAnswer)
       {
