@@ -141,10 +141,10 @@ function randomize() {
 };
 
 const initializedBank = randomize();
-const qBank = initializedBank[0];
+let qBank = initializedBank[0];
 const rCate = initializedBank[1];
 
-const sectors = [{
+let sectors = [{
         color: "#fff000",
         label: rCate[0]
     },
@@ -171,23 +171,39 @@ const sectors = [{
 ];
 
 const rand = (m, M) => Math.random() * (M - m) + m;
-const tot = sectors.length;
-const EL_spin = document.querySelector("#spin");
-const ctx = document.querySelector("#wheel").getContext('2d');
-const dia = ctx.canvas.width;
-const rad = dia / 2;
-const PI = Math.PI;
-const TAU = 2 * PI;
-const arc = TAU / sectors.length;
+let tot = sectors.length;
+let EL_spin = document.querySelector("#spin");
+let ctx = document.querySelector("#wheel").getContext('2d');
+let dia = ctx.canvas.width;
+let rad = dia / 2;
+let PI = Math.PI;
+let TAU = 2 * PI;
+let arc = TAU / sectors.length;
 
-const friction = 0.991; // 0.995=soft, 0.99=mid, 0.98=hard
+let friction = 0.991; // 0.995=soft, 0.99=mid, 0.98=hard
 let angVel = 0; // Angular velocity
 let ang = 0; // Angle in radians
 
-const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
+let arrayIndex = getIndex();
+
+function getIndex(){
+    return Math.floor(tot - ang / TAU * tot) % tot;
+}
+
+function getConstants(){
+    tot = sectors.length;
+    EL_spin = document.querySelector("#spin");
+    ctx = document.querySelector("#wheel").getContext('2d');
+    dia = ctx.canvas.width;
+    rad = dia / 2;
+    PI = Math.PI;
+    TAU = 2 * PI;
+    arc = TAU / sectors.length;
+}
 
 function drawSector(sector, i) {
-    const ang = arc * i;
+    getConstants();
+    let ang = arc * i;
     ctx.save();
     // COLOR
     ctx.beginPath();
@@ -234,4 +250,8 @@ engine(); // Start engine
 EL_spin.textContent = "SPIN!";
 EL_spin.addEventListener("click", () => {
     if (!angVel) angVel = rand(0.25, 0.35);
+    sectors.splice(0,1);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    sectors.forEach(drawSector);
 });
+
