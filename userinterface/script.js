@@ -242,6 +242,10 @@ function decrementQuestionTimer(PVindex){
       }
     }
     buzzInTimer.innerHTML = "8";
+    if (isEmpty(category))
+    {
+      removeCategory();
+    }
     if (numQuestions > 0)
     {
       setTimeout(nextQuestion, 5000);
@@ -1083,11 +1087,6 @@ function removeCategory()
 
       qBank[category][0][(pointValue/10)-1] = false;
 
-      if (isEmpty(category))
-      {
-        removeCategory();
-      }
-
       numQuestions = numQuestions - 1;
 
       setCurrentPlayer(1);
@@ -1157,6 +1156,11 @@ function removeCategory()
 
     questionAnswered = true;
 
+    if (isEmpty(category))
+    {
+      removeCategory();
+    }
+
     buzzInTimer.innerHTML = "8";
     answerTimer.style.visibility = 'hidden';
     if (numQuestions > 0)
@@ -1212,6 +1216,11 @@ function removeCategory()
     }
 
     questionAnswered = true;
+
+    if (isEmpty(category))
+    {
+      removeCategory();
+    }
 
     buzzInTimer.innerHTML = "8";
     answerTimer.style.visibility = 'hidden';
@@ -1269,6 +1278,11 @@ function removeCategory()
 
     questionAnswered = true;
 
+    if (isEmpty(category))
+    {
+      removeCategory();
+    }
+
     buzzInTimer.innerHTML = "8";
     answerTimer.style.visibility = 'hidden';
     if (numQuestions > 0)
@@ -1324,6 +1338,11 @@ function removeCategory()
     }
 
     questionAnswered = true;
+
+    if (isEmpty(category))
+    {
+      removeCategory();
+    }
 
     buzzInTimer.innerHTML = "8";
     answerTimer.style.visibility = 'hidden';
