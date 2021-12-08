@@ -52,9 +52,9 @@
   var numQuestions = 0;
   var pointValue = 0;
 
-  var adjustingPoints = false;
   var category;
   var correctAnswer;
+  var questionAnswered = false;
 
   // Timer Lengths
   const PVtimerLength = "3";
@@ -74,52 +74,83 @@
   var awwAudio = new Audio('Assets/Aww.mp3');
 
   // Wheel variables
+  var wheelCanvas = document.getElementById("wheel");
+  const widthReference = 2560;
+  const heightReference = 1329;
+  wheelCanvas.width = 750 * (window.innerWidth/widthReference);
+  wheelCanvas.height = 750 * (window.innerHeight/heightReference);
   const initializedBank = randomize();
-  const qBank = initializedBank[0];
-  const rCate = initializedBank[1];
+  let qBank = initializedBank[0];
+  let rCate = initializedBank[1];
   var wheelSpun = false;
 
-  // Wheel colored sectors
-  const sectors = [{
+  // Unchanging Wheel colored sectors
+  let originalSectors = [{
     color: "#fff000",
-    label: rCate[0]
+    label: ""
   },
   {
     color: "#00cd22",
-    label: rCate[1]
+    label: ""
   },
   {
     color: "#c84fff",
-    label: rCate[2]
+    label: ""
   },
   {
     color: "#0095fe",
-    label: rCate[3]
+    label: ""
   },
   {
     color: "#fe0000",
-    label: rCate[4]
+    label: ""
   },
   {
     color: "#fe6900",
-    label: rCate[5]
+    label: ""
+  },
+];
+
+  // Wheel colored sectors
+  let sectors = [{
+    color: "#fff000",
+    label: ""
+  },
+  {
+    color: "#00cd22",
+    label: ""
+  },
+  {
+    color: "#c84fff",
+    label: ""
+  },
+  {
+    color: "#0095fe",
+    label: ""
+  },
+  {
+    color: "#fe0000",
+    label: ""
+  },
+  {
+    color: "#fe6900",
+    label: ""
   },
 ];
 
 // More wheel variables
 const rand = (m, M) => Math.random() * (M - m) + m;
-const tot = sectors.length;
-const EL_spin = document.querySelector("#spin");
-const ctx = document.querySelector("#wheel").getContext('2d');
-const dia = ctx.canvas.width;
-const rad = dia / 2;
-const PI = Math.PI;
-const TAU = 2 * PI;
-const arc = TAU / sectors.length;
+let tot = sectors.length;
+let EL_spin = document.querySelector("#spin");
+let ctx = document.querySelector("#wheel").getContext('2d');
+let dia = ctx.canvas.width;
+let rad = dia / 2;
+let PI = Math.PI;
+let TAU = 2 * PI;
+let arc = TAU / sectors.length;
 const friction = 0.991; // 0.995=soft, 0.99=mid, 0.98=hard
 let angVel = 0; // Angular velocity
 let ang = 0; // Angle in radians
-const getIndex = () => Math.floor(tot - ang / TAU * tot) % tot;
 
 //-------------------------Functions-------------------------//
 
@@ -158,12 +189,26 @@ function decrementBuzzInTimer(){
     // Decrement questions
     numQuestions = numQuestions - 1;
     questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
-    
+ 
     qBank[category][0][(pointValue/10)-1] = false; // Remove question from list
 
-    // Wait 5 seconds before moving to next question
-    answerTimer.innerText = answerDisplayLength;
-    setTimeout(decrementQuestionTimer, 1000, -1);
+    if (isEmpty(category))
+    {
+      removeCategory();
+    }
+
+    // Wait 5 seconds before moving to next question or next game
+    if (numQuestions == 0)
+    {
+      setTimeout(resetGame, 5000);
+      answerTimer.innerText = '1';
+      setTimeout(decrementQuestionTimer, 1000, -1);
+    }
+    else
+    {
+      answerTimer.innerText = answerDisplayLength;
+      setTimeout(decrementQuestionTimer, 1000, -1);
+    }
   }
 }
 
@@ -176,12 +221,11 @@ Question timer function
 function decrementQuestionTimer(PVindex){
   answerTimer.textContent = (parseInt(answerTimer.textContent) - 1).toString();
   answerTimer.innerHTML = answerTimer.innerHTML.bold();
-  console.log(answerTimer.textContent);
   if (parseInt(answerTimer.textContent) > 0)
   {
     setTimeout(decrementQuestionTimer, 1000, PVindex);
   }
-  else if (parseInt(answerTimer.textContent) == 0 && answerScreen.style.visibility == 'visible' && !adjustingPoints) // Timer expired on answer screen
+  else if (parseInt(answerTimer.textContent) == 0 && answerScreen.style.visibility == 'visible' && !questionAnswered) // Timer expired on answer screen
   {
     questionDisplay2.innerHTML = "Timer expired!".bold();
     questionDisplay2.style.color = "red";
@@ -217,16 +261,12 @@ function decrementQuestionTimer(PVindex){
     PVDisplayText.innerHTML = "<b>"+pointValue+"</b>";
     PVDisplayText2.innerHTML = "<b>"+pointValue+"</b>";
 
-    console.log(PVindex); // testing...
-    console.log(category);
     var question = qBank[category][1][PVindex];
-    console.log(question);
     questionDisplay.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.innerHTML = "<b>"+question+"</b>";
     questionDisplay2.style.color = "black";
 
     var answers = qBank[category][3][PVindex];
-    console.log(answers);
     correctAnswer = qBank[category][2][PVindex];
     answers = answers.sort(shuffle);
 
@@ -286,10 +326,15 @@ function resetGame(){
 
   // Go to lobby screen
   answerScreen.style.visibility = 'hidden';
+  buzzInScreen.style.visibility = 'hidden';
   lobbyScreen.style.visibility = 'visible';
   answerTimer.style.visibility = 'hidden';
   questionsLeft.style.visibility = 'hidden';
   document.getElementById("playButton").src = "assets/PlayAgainButton.png";
+  for (let i = 0; i < sectors.length; i++)
+  {
+    sectors[i].label = rCate[i];
+  }
   categoryDisplay.innerText = "";
 
   // Display winner
@@ -358,16 +403,11 @@ Add points function
 */
 function addPoints(playerIndex, originalPoints)
 {
-  adjustingPoints = true;
   var playerPoints = document.getElementById("player"+playerIndex+"Points");
   if (parseInt(playerPoints.textContent) + 1 <= originalPoints + pointValue)
   {
     playerPoints.innerHTML = (parseInt(playerPoints.textContent) + 1).toString().bold();
-    setTimeout(addPoints, 25, playerIndex, originalPoints);
-  }
-  else
-  {
-    adjustingPoints = false;
+    setTimeout(addPoints, 10, playerIndex, originalPoints);
   }
 }
 
@@ -383,11 +423,7 @@ function subtractPoints(playerIndex, originalPoints)
   {
     playerPoints.textContent = (parseInt(playerPoints.textContent) - 1).toString();
     playerPoints.innerHTML = playerPoints.innerHTML.bold();
-    setTimeout(subtractPoints, 25, playerIndex, originalPoints);
-  }
-  else
-  {
-    adjustingPoints = false;
+    setTimeout(subtractPoints, 10, playerIndex, originalPoints);
   }
 }
 
@@ -432,6 +468,23 @@ function findWinner()
   }
   return {winner, winnerPoints};
 }
+
+function getIndex()
+{
+  return Math.floor(tot - ang / TAU * tot) % tot;
+}
+
+function getConstants(){
+  tot = sectors.length;
+  EL_spin = document.querySelector("#spin");
+  ctx = document.querySelector("#wheel").getContext('2d');
+  dia = ctx.canvas.width;
+  rad = dia / 2;
+  PI = Math.PI;
+  TAU = 2 * PI;
+  arc = TAU / sectors.length;
+}
+
 
 /*
 Randomize function
@@ -654,7 +707,8 @@ Draw sector function
   Used to actually draw the wheel sectors and fill with the category text
 */
 function drawSector(sector, i, text) {
-  const ang = arc * i;
+  getConstants();
+  let ang = arc * i;
   ctx.save();
   // COLOR
   ctx.beginPath();
@@ -682,7 +736,7 @@ Rotate function
 */
 function rotate() {
   EL_spin.textContent = "";
-  const sector = sectors[getIndex()];
+  let sector = sectors[getIndex()];
   ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
   EL_spin.style.background = sector.color;
   categoryDisplay.style.background = sector.color;
@@ -754,6 +808,21 @@ function isEmpty(category)
   return emptyCategory;
 }
 
+function removeCategory()
+{
+  if (sectors.length > 1)
+  {
+    sectors.splice(getIndex(), 1);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    sectors.forEach(drawSector);
+  }
+  else
+  {
+    sectors = originalSectors;
+    sectors.forEach(drawSector);
+  }
+}
+
 
   //-------------------------Initialization-------------------------//
 
@@ -769,10 +838,7 @@ function isEmpty(category)
   answerScreen.style.visibility = 'hidden';
 
   // Draw wheel
-  for (var i = 0; i < sectors.length; i++)
-  {
-    drawSector(sectors[i], i, false);
-  }
+  sectors.forEach(drawSector);
   rotate(); // Initial rotation
   engine(); // Start engine
   if (!muted) themeMusic.play(); // Start lobby music
@@ -841,6 +907,12 @@ function isEmpty(category)
     // Validate input
     if (questionNumberInput.value > 0 && questionNumberInput.value <= 30) // Good input, continue
     {
+      for (let i = 0; i < sectors.length; i++)
+      {
+        sectors[i].label = rCate[i];
+      }
+      sectors.forEach(drawSector);
+
       fadeOutAudio(themeMusic);
 
       // Swap to wheel spin screen
@@ -1011,11 +1083,18 @@ function isEmpty(category)
 
       qBank[category][0][(pointValue/10)-1] = false;
 
+      if (isEmpty(category))
+      {
+        removeCategory();
+      }
+
       numQuestions = numQuestions - 1;
 
       setCurrentPlayer(1);
 
       sleep(1000);
+
+      questionAnswered = false;
 
       // Enable answer buttons
       for (var i = 1; i < 5; i++)
@@ -1076,6 +1155,8 @@ function isEmpty(category)
       }
     }
 
+    questionAnswered = true;
+
     buzzInTimer.innerHTML = "8";
     answerTimer.style.visibility = 'hidden';
     if (numQuestions > 0)
@@ -1129,6 +1210,8 @@ function isEmpty(category)
         }
       }
     }
+
+    questionAnswered = true;
 
     buzzInTimer.innerHTML = "8";
     answerTimer.style.visibility = 'hidden';
@@ -1184,6 +1267,8 @@ function isEmpty(category)
       }
     }
 
+    questionAnswered = true;
+
     buzzInTimer.innerHTML = "8";
     answerTimer.style.visibility = 'hidden';
     if (numQuestions > 0)
@@ -1237,6 +1322,8 @@ function isEmpty(category)
         }
       }
     }
+
+    questionAnswered = true;
 
     buzzInTimer.innerHTML = "8";
     answerTimer.style.visibility = 'hidden';

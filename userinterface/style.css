@@ -30,16 +30,6 @@ body {
   left: 0.25%;
 }
 
- .wheel {
-  width: 27.5%;
-  height: auto;
-  z-index: 2;
-  position: absolute;
-  top: 14%;
-  left: 36%;
-  size:cover;
-}
-
  /* Wheel elements */
  #wheelOfFortune {
   display: inline-block;
