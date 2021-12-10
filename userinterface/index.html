@@ -12,19 +12,22 @@
     <div id="username">
     <div id="alwaysVisible">
       <img class="title" id="title" src="assets/WheelofJeopardyTitle.png" />
-      <img class="wheel" id="wheel" src="assets/Wheel.png" />
-      <img class="wheelStopper" id="wheelStopper" src="assets/WheelStopperIcon.png" />
+      <div id="wheelOfFortune">
+        <canvas id="wheel"></canvas>
+        <div id="spin"></div>
+      </div>
+      <img class="muteButton" id="muteButton" src="assets/Unmuted.png" />
     </div>
     <div id="playerList">
       <img class="player1Icon" id="player1Icon" src="assets/PlayerIcon.png" />
       <img class="player2Icon" id="player2Icon" src="assets/PlayerIcon.png" />
       <img class="player3Icon" id="player3Icon" src="assets/PlayerIcon.png" />
       <div class="player1Name" id="player1Name"><b>Username</b></div>
-      <div class="player1Points" id="player1Points"><b>-1</b></div>
-      <div class="player2Name" id="player2Name"><b>Username</b></div>
-      <div class="player2Points" id="player2Points"><b>500</b></div>
-      <div class="player3Name" id="player3Name"><b>Username</b></div>
-      <div class="player3Points" id="player3Points"><b>99999</b></div>
+      <div class="player1Points" id="player1Points"><b>0</b></div>
+      <div class="player2Name" id="player2Name"><b>Emily</b></div>
+      <div class="player2Points" id="player2Points"><b>0</b></div>
+      <div class="player3Name" id="player3Name"><b>Kurt</b></div>
+      <div class="player3Points" id="player3Points"><b>0</b></div>
     </div>
     <div id="questionsLeft">
       <img class="questionsLeftBox" id="questionsLeftBox" src="assets/QuestionsRemainingDisplay.png" />
@@ -44,7 +47,6 @@
       <div class="winnerLabel" id="winnerLabel"><b></b></div>
     </div>
     <div id="spinScreen">
-      <img class="spinButton" id="spinButton" src="assets/SpintheWheelButton.png" />
       <div class="categoryDisplay" id="categoryDisplay"></div>
     </div>
     <div id="pointValueScreen">
@@ -64,18 +66,19 @@
       <img class="buzzerButton" id="buzzerButton" src="assets/BuzzerButton.png" />
       <img class="PVDisplayImage" id="PVDisplayImage" src="assets/PointValueDisplay.png" />
       <div class="PVDisplayText" id="PVDisplayText"><b></b></div>
-      <div class="questionDisplay" id="questionDisplay"><b>Question goes here</b></div>
-      <div class="buzzInTimer" id="buzzInTimer"><b>5</b></div>
+      <div class="questionDisplay" id="questionDisplay"><b></b></div>
+      <div class="answerDisplay" id="answerDisplay"><b></b></div>
+      <div class="buzzInTimer" id="buzzInTimer"><b>9</b></div>
     </div>
     <div id="answerScreen">
       <img class="answer1Button" id="answer1Button" src="assets/AnswerButton.png" />
-      <div class="answer1Text" id="answer1Text"><b>A.</b></div>
+      <div class="answer1Text" id="answer1Text"><b></b></div>
       <img class="answer2Button" id="answer2Button" src="assets/AnswerButton.png" />
-      <div class="answer2Text" id="answer2Text"><b>B.</b></div>
+      <div class="answer2Text" id="answer2Text"><b></b></div>
       <img class="answer3Button" id="answer3Button" src="assets/AnswerButton.png" />
-      <div class="answer3Text" id="answer3Text"><b>C.</b></div>
+      <div class="answer3Text" id="answer3Text"><b></b></div>
       <img class="answer4Button" id="answer4Button" src="assets/AnswerButton.png" />
-      <div class="answer4Text" id="answer4Text"><b>D.</b></div>
+      <div class="answer4Text" id="answer4Text"><b></b></div>
       <img class="PVDisplayImage2" id="PVDisplayImage2" src="assets/PointValueDisplay.png" />
       <div class="PVDisplayText2" id="PVDisplayText2"><b></b></div>
       <div class="questionDisplay2" id="questionDisplay2"><b>Question goes here</b></div>
