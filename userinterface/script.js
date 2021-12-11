@@ -1,6 +1,28 @@
 (function() {
   //-------------------------Variables-------------------------//
   
+  // Socket io
+  var socket = io();
+  var playerId = Math.floor(Math.random() * 100);
+  var connectAck = document.getElementById('connectButton');
+  var buzzInAck = document.getElementById('buzzerButton');
+
+  // Player Data
+  var player1_Name = document.getElementById('player1Name');
+  var player2_Name = document.getElementById('player2Name');
+  var player3_Name = document.getElementById('player3Name');
+
+  var player1Points = document.getElementById('player1Points');
+  var player2Points = document.getElementById('player2Points');
+  var player3Points = document.getElementById('player3Points');
+
+  var player1ID;
+  var player2ID;
+  var player3ID;
+
+  var buzzedInPlayer;
+  var serverID;
+
   // Grouped Screen Elements by IDs
   var alwaysVisible = document.getElementById("alwaysVisible");
   var playerList = document.getElementById("playerList");
@@ -151,6 +173,128 @@ let arc = TAU / sectors.length;
 const friction = 0.991; // 0.995=soft, 0.99=mid, 0.98=hard
 let angVel = 0; // Angular velocity
 let ang = 0; // Angle in radians
+
+//--------------------- Client Messages ---------------------
+
+// TODO: Merge with user interface event listeners
+// TODO: Fix player cursors
+
+// ------ Event Listeners -----
+// CONNECT
+connectAck.addEventListener('click', function(e) {
+  console.log('Username: ', usernameInput);
+  socket.emit('connect-event', {Name: usernameInput.value});
+});
+
+// BUZZ IN
+buzzInAck.addEventListener('click', function(e) {
+    var now = new Date();
+    console.log(now.toUTCString());
+    var timeClicked = now.toUTCString();
+    serverID = serverID;
+    //TODO: buzzedInPlayer
+    socket.emit('buzz-in', {'timeClicked': timeClicked, 'serverID': serverID, 'buzzedInPlayer': buzzedInPlayer});
+});
+
+// POINT VALUE
+// CHOOSE ANSWER
+// SPIN WHEEL
+// -----------------------------
+
+// SCORE UPDATE
+socket.on('score-update', (data) => {
+  // TODO: fix id to match current player
+  // playerID = data.playerId;
+  // serverID = data.serverId;
+
+  console.log("Player Scores: ", data);
+  player1Points.value = data.scores1;
+  player2Points.value = data.scores2;
+  player3Points.value = data.scores3;
+
+  document.getElementById("player1Points").innerHTML = "<b>"+data.scores1+"</b>";
+  document.getElementById("player2Points").innerHTML = "<b>"+data.scores2+"</b>";
+  document.getElementById("player3Points").innerHTML = "<b>"+data.scores3+"</b>";
+
+  socket.emit('score-update', {'player1Points': player1Points, 'player2Points': player2Points, 'player3Points': player3Points});
+
+})
+
+// UPDATE GAME STATE
+socket.on('update-game-state', (data) => {
+  syncAnswerTime = data.syncAnswerTime;
+  serverID = data.serverID;
+
+  socket.emit('update-game-state', {'syncAnswerTime': syncAnswerTime, 'serverID': serverID});
+})
+
+// UPDATE QUESTION TIMER
+socket.on('update-question-timer', (data) => {
+  syncBuzzerTime = data.syncBuzzerTime;
+  serverID = data.serverID;
+
+  socket.emit('update-question-timer', {'syncBuzzerTime': syncBuzzerTime, 'serverID': serverID});
+})
+
+// UPDATE QUESTION
+socket.on('update-question', (data) => {
+  questionsLeft = data.questionsLeft;
+  currentCategory = data.currentCategory;
+  currentQuestion = data.currentQuestion;
+
+  answer = data.answer;
+  optionA = data.optionA;
+  optionB = data.optionB;
+  optionC = data.optionC;
+  optionD = data.optionD;
+
+  serverID = data.serverID;
+
+  socket.emit('update-question', {'questionsLeft': questionsLeft, 'currentCategory': currentCategory,
+                                  'currentQuestion': currentQuestion, 'answer': answer, 
+                                  'optionA': optionA, 'optionB': optionB, 'optionC': optionC, 'optionD': optionD});
+})
+
+// UPDATE UI
+socket.on('update-ui', (data) => {
+  wheelColor = data.wheelColor;
+  wheelCategory = data.wheelCategory;
+
+  currentPlayer = data.currentPlayer;
+  hostPlayer = data.hostPlayer;
+
+  player1_Name.value = data.name1;
+  player2_Name.value = data.name2;
+  player3_Name.value = data.name3; 
+    
+  player1ID = data.id1;
+  player2ID = data.id2;
+  player3ID = data.id3;
+
+  player1Points = data.player1Points;
+  player2Points = data.player2Points;
+  player3Points = data.player3Points;
+
+  questionsLeft = data.questionsLeft;
+  currentCategory = data.currentCategory;
+  currentQuestion = data.currentQuestion;
+  answer = data.answer;
+  optionA = data.optionA;
+  optionB = data.optionB;
+  optionC = data.optionC;
+  optionD = data.optionD;
+
+  serverID = data.serverID;
+
+  socket.emit('update-ui', {'wheelColor': wheelColor, 'wheelCategory': wheelCategory, 
+                            'currentPlayer': currentPlayer, 'hostPlayer': hostPlayer,
+                            'player1_Name': player1_Name, 'player2_Name': player2_Name, 'player3_Name': player3_Name,
+                            'player1ID': player1ID, 'player2ID': player2ID, 'player3ID': player3ID,
+                            'player1Points': player1Points, 'player2Points': player2Points, 'player3Points': player3Points,
+                            'questionsLeft': questionsLeft, 'currentCategory': currentCategory, 'currentQuestion': currentQuestion,
+                            'answer': answer, 'optionA': optionA, 'optionB': optionB, 'optionC': optionC, 'optionD': optionD});
+
+})
 
 //-------------------------Functions-------------------------//
 
