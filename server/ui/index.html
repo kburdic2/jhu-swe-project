@@ -12,22 +12,19 @@
     <div id="username">
     <div id="alwaysVisible">
       <img class="title" id="title" src="assets/WheelofJeopardyTitle.png" />
-      <div id="wheelOfFortune">
-        <canvas id="wheel"></canvas>
-        <div id="spin"></div>
-      </div>
-      <img class="muteButton" id="muteButton" src="assets/Unmuted.png" />
+      <img class="wheel" id="wheel" src="assets/Wheel.png" />
+      <img class="wheelStopper" id="wheelStopper" src="assets/WheelStopperIcon.png" />
     </div>
     <div id="playerList">
       <img class="player1Icon" id="player1Icon" src="assets/PlayerIcon.png" />
       <img class="player2Icon" id="player2Icon" src="assets/PlayerIcon.png" />
       <img class="player3Icon" id="player3Icon" src="assets/PlayerIcon.png" />
       <div class="player1Name" id="player1Name"><b>Username</b></div>
-      <div class="player1Points" id="player1Points"><b>0</b></div>
-      <div class="player2Name" id="player2Name"><b>Emily</b></div>
-      <div class="player2Points" id="player2Points"><b>0</b></div>
-      <div class="player3Name" id="player3Name"><b>Kurt</b></div>
-      <div class="player3Points" id="player3Points"><b>0</b></div>
+      <div class="player1Points" id="player1Points"><b>-1</b></div>
+      <div class="player2Name" id="player2Name"><b>Username</b></div>
+      <div class="player2Points" id="player2Points"><b>500</b></div>
+      <div class="player3Name" id="player3Name"><b>Username</b></div>
+      <div class="player3Points" id="player3Points"><b>99999</b></div>
     </div>
     <div id="questionsLeft">
       <img class="questionsLeftBox" id="questionsLeftBox" src="assets/QuestionsRemainingDisplay.png" />
@@ -40,13 +37,14 @@
     </div>
     <div id="lobbyScreen">
       <div class="hostMenuLabel"><b>Host Menu</b></div>
-      <img class="numberOfQuestions" id="numberOfQuestions" src="assets/numberOfQuestionsTextEntry.png" />
+      <img class="numberOfQuestions" id="numberOfQuestions" src="assets/NumberofQuestionsTextEntry.png" />
       <img class="playButton" id="playButton" src="assets/PlayButton.png" />
       <input class='questionNumberInput' id='questionNumberInput' type='number'/>
       <div class="errorQuestionNumber" id="errorQuestionNumber"><b>**Enter a value 1-30**</b></div>
       <div class="winnerLabel" id="winnerLabel"><b></b></div>
     </div>
     <div id="spinScreen">
+      <img class="spinButton" id="spinButton" src="assets/SpintheWheelButton.png" />
       <div class="categoryDisplay" id="categoryDisplay"></div>
     </div>
     <div id="pointValueScreen">
@@ -66,19 +64,18 @@
       <img class="buzzerButton" id="buzzerButton" src="assets/BuzzerButton.png" />
       <img class="PVDisplayImage" id="PVDisplayImage" src="assets/PointValueDisplay.png" />
       <div class="PVDisplayText" id="PVDisplayText"><b></b></div>
-      <div class="questionDisplay" id="questionDisplay"><b></b></div>
-      <div class="answerDisplay" id="answerDisplay"><b></b></div>
-      <div class="buzzInTimer" id="buzzInTimer"><b>9</b></div>
+      <div class="questionDisplay" id="questionDisplay"><b>Question goes here</b></div>
+      <div class="buzzInTimer" id="buzzInTimer"><b>5</b></div>
     </div>
     <div id="answerScreen">
       <img class="answer1Button" id="answer1Button" src="assets/AnswerButton.png" />
-      <div class="answer1Text" id="answer1Text"><b></b></div>
+      <div class="answer1Text" id="answer1Text"><b>A.</b></div>
       <img class="answer2Button" id="answer2Button" src="assets/AnswerButton.png" />
-      <div class="answer2Text" id="answer2Text"><b></b></div>
+      <div class="answer2Text" id="answer2Text"><b>B.</b></div>
       <img class="answer3Button" id="answer3Button" src="assets/AnswerButton.png" />
-      <div class="answer3Text" id="answer3Text"><b></b></div>
+      <div class="answer3Text" id="answer3Text"><b>C.</b></div>
       <img class="answer4Button" id="answer4Button" src="assets/AnswerButton.png" />
-      <div class="answer4Text" id="answer4Text"><b></b></div>
+      <div class="answer4Text" id="answer4Text"><b>D.</b></div>
       <img class="PVDisplayImage2" id="PVDisplayImage2" src="assets/PointValueDisplay.png" />
       <div class="PVDisplayText2" id="PVDisplayText2"><b></b></div>
       <div class="questionDisplay2" id="questionDisplay2"><b>Question goes here</b></div>
@@ -86,4 +83,48 @@
     </div>
   </body>
   <script src="script.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+        // TODO: place code in client class/script to obfuscate 
+        var socket = io();
+    var playerId = Math.floor(Math.random() * 100);
+    var connectAck = document.getElementById('connectButton');
+
+    var player3_Name = document.getElementById('player3Name');
+    var player2_Name = document.getElementById('player2Name');
+    var player1_Name = document.getElementById('player1Name');
+
+
+    // when connecting gather ids of players 
+    socket.on('connect', () => {
+      console.log(socket.id);
+
+      var usernameInput = document.getElementById('usernameInput');
+
+      socket.on('player-ids', (data) => {
+        socket.emit('update-event', {ID: playerId, Name: usernameInput.value});
+        console.log("Player ID's: ", data);
+        // TODO: assign player ids
+
+      })
+
+      socket.on('player-names', (data) => {
+        console.log("Player Names: ", data);
+        // assign player names to html elements
+        player1_Name.value = data.name1;
+        player2_Name.value = data.name2;
+        player3_Name.value = data.Name3;
+        document.getElementById("player2Name").innerHTML = "<b>"+data.Name2+"</b>";
+        document.getElementById("player1Name").innerHTML = "<b>"+data.Name1+"</b>";
+      })
+
+    });
+
+    connectAck.addEventListener('click', function(e) {
+        // TODO: add error handling
+        console.log('Username: ', usernameInput);
+        socket.emit('connect-event', {ID: playerId, Name: usernameInput.value});
+        socket.emit('update-event');
+    });
+  </script>
 </html>
