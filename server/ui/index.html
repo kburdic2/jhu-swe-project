@@ -39,7 +39,7 @@
       <input class='usernameInput' id='usernameInput' type='text'/>
     </div>
     <div id="lobbyScreen">
-      <div class="hostMenuLabel"><b>Host Menu</b></div>
+      <div class="hostMenuLabel" id="hostMenuLabel"><b>Host Menu</b></div>
       <img class="numberOfQuestions" id="numberOfQuestions" src="assets/numberOfQuestionsTextEntry.png" />
       <img class="playButton" id="playButton" src="assets/PlayButton.png" />
       <input class='questionNumberInput' id='questionNumberInput' type='number'/>
@@ -50,17 +50,17 @@
       <div class="categoryDisplay" id="categoryDisplay"></div>
     </div>
     <div id="pointValueScreen">
-      <div class="PVChoiceLabel"><b>Select a point value</b></div>
+      <div class="PVChoiceLabel" id="PVChoiceLabel"><b>Select a point value</b></div>
       <img class="PVButton1" id="PVButton1" src="assets/UnusedPointValueButton.png"/>
-      <div class="PVLabel1"><b>10</b></div>
+      <div class="PVLabel1" id="PVLabel1"><b>10</b></div>
       <img class="PVButton2" id="PVButton2" src="assets/UnusedPointValueButton.png"/>
-      <div class="PVLabel2"><b>20</b></div>
+      <div class="PVLabel2" id="PVLabel2"><b>20</b></div>
       <img class="PVButton3" id="PVButton3" src="assets/UnusedPointValueButton.png"/>
-      <div class="PVLabel3"><b>30</b></div>
+      <div class="PVLabel3" id="PVLabel3"><b>30</b></div>
       <img class="PVButton4" id="PVButton4" src="assets/UnusedPointValueButton.png"/>
-      <div class="PVLabel4"><b>40</b></div>
+      <div class="PVLabel4" id="PVLabel4"><b>40</b></div>
       <img class="PVButton5" id="PVButton5" src="assets/UnusedPointValueButton.png"/>
-      <div class="PVLabel5"><b>50</b></div>
+      <div class="PVLabel5" id="PVLabel5"><b>50</b></div>
     </div>
     <div id="buzzInScreen">
       <img class="buzzerButton" id="buzzerButton" src="assets/BuzzerButton.png" />
@@ -100,13 +100,13 @@
     var player2_Name = document.getElementById('player2Name');
     var player3_Name = document.getElementById('player3Name');
 
+    var player1_Icon = document.getElementById('player1Icon');
+    var player2_Icon = document.getElementById('player2Icon');
+    var player3_Icon = document.getElementById('player3Icon');
+
     var player1Points = document.getElementById('player1Points');
     var player2Points = document.getElementById('player2Points');
     var player3Points = document.getElementById('player3Points');
-
-    var player1ID = Math.floor(Math.random() * 100);
-    var player2ID = Math.floor(Math.random() * 100);
-    var player3ID = Math.floor(Math.random() * 100);
 
     //  TODO 1: use vars
     var firstPlayerToBuzz;
@@ -882,6 +882,7 @@
     Used to spin the wheel and display the chosen category. Sets up point value selection screen.
   */
   function rotate() {
+    console.log("Spinning wheel in rotate()");
     EL_spin.textContent = "";
     let sector = sectors[getIndex()];
     ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
@@ -908,7 +909,6 @@
         else
         {
           PVButton.src = "assets/UnusedPointValueButton.png";
-          PVButton.style.cursor = "pointer";
         }
       }
     }
@@ -1001,10 +1001,143 @@
     myID = data.userID;
   })
 
-  // Send this message to the client when they join the server so the client knows which user they are
   socket.on('can-buzz-in', (data) => {
     +new Date;
     msgTime = Date.now();
+  })
+
+  socket.on('not-host', () => {
+    playButton.style.visibility = "hidden";
+    document.getElementById('numberOfQuestions').style.visibility = "hidden";
+    document.getElementById('questionNumberInput').style.visibility = "hidden";
+    document.getElementById('hostMenuLabel').style.visibility = "hidden";
+  })
+
+  socket.on('spinning-wheel', (data) => {
+    console.log("Spinning wheel");
+    console.log(data);
+    angVel = data.angVel;
+    wheelSpun = true;
+    // Disable PV buttons
+    for (var i = 1; i <= 5; i++)
+    {
+      var currButton = document.getElementById("PVButton"+i);
+      currButton.style.cursor = "default";
+      var currLabel = document.getElementById("PVLabel"+i);
+      currLabel.style.cursor = "default";
+    }
+    document.getElementById('PVChoiceLabel').style.visibility = "hidden";
+
+    for (var i = 1; i <= 5; i++)
+      {
+        var PVButton = document.getElementById("PVButton"+i);
+
+        if (!qBank[category][0][i-1])
+        {
+          PVButton.src = "assets/UsedPointValueButton.png";
+        }
+        else
+        {
+          PVButton.src = "assets/UnusedPointValueButton.png";
+        }
+      }
+  })
+
+  socket.on('starting-game', (data) => {
+    console.log("Received game start");
+    console.log(data);
+    numQuestions = data.numQuestions;
+    qBank = data.qBank;
+    rCate = data.rCate;
+    for (let i = 0; i < sectors.length; i++)
+    {
+      sectors[i].label = rCate[i];
+    }
+    sectors.forEach(drawSector);
+
+    fadeOutAudio(themeMusic);
+
+    // Swap to wheel spin screen
+    lobbyScreen.style.visibility = 'hidden';
+    spinScreen.style.visibility = 'visible';
+    for (var i = 0; i < sectors.length; i++)
+    {
+      drawSector(sectors[i], i, true);
+    }
+    playerList.style.visibility = 'visible';
+    questionsLeft.style.visibility = 'visible';
+
+    questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
+
+    setCurrentPlayer(1); // The host player is always player ID 1, and they're always the first current player
+  })
+
+  socket.on('pv-chosen-replicated', (data) => {
+    pointValue = data.pv;
+
+    document.getElementById("PVButton"+(pointValue/10)).src = "assets/SelectedPointValueButton.png";
+
+    buzzerButton.style.cursor = "pointer";
+
+    answerTimer.textContent = PVtimerLength;
+    answerTimer.innerHTML = answerTimer.innerHTML.bold();
+    setTimeout(decrementQuestionTimer, 1000, 0);
+
+    +new Date;
+    msgTime = Date.now();
+  })
+
+  socket.on('player-info', (data) => {
+    console.log("Received msg");
+    console.log(data);
+    for (let i = 1; i <= 3; i++)
+    {
+
+      if (data.player1_ID == -1)
+      {
+        player1_Name.style.visibility = "hidden";
+        player1_Icon.style.visibility = "hidden";
+        player1Points.style.visibility = "hidden";
+      }
+      else
+      {
+        player1_Name.style.visibility = "visible";
+        player1_Icon.style.visibility = "visible";
+        player1Points.style.visibility = "visible";
+        player1Points.innerText = "0";
+        player1_Name.innerText = data.Name1;
+      }
+
+      if (data.player2_ID == -1)
+      {
+        player2_Name.style.visibility = "hidden";
+        player2_Icon.style.visibility = "hidden";
+        player2Points.style.visibility = "hidden";
+      }
+      else
+      {
+        player2_Name.style.visibility = "visible";
+        player2_Icon.style.visibility = "visible";
+        player2Points.style.visibility = "visible";
+        player2Points.innerText = "0";
+        player2_Name.innerText = data.Name2;
+      }
+
+      if (data.player3_ID == -1)
+      {
+        player3_Name.style.visibility = "hidden";
+        player3_Icon.style.visibility = "hidden";
+        player3Points.style.visibility = "hidden";
+      }
+      else
+      {
+        player3_Name.style.visibility = "visible";
+        player3_Icon.style.visibility = "visible";
+        player3Points.style.visibility = "visible";
+        player3Points.innerText = "0";
+        player3_Name.innerText = data.Name3;
+      }
+    }
   })
 
   // UPDATE QUESTION
@@ -1134,14 +1267,12 @@
         lobbyScreen.style.visibility = 'visible';
         playerList.style.visibility = 'visible';
 
-        document.getElementById("player"+myID+"Name").innerHTML = "<b>"+username+"</b>";
+        //document.getElementById("player"+myID+"Name").innerHTML = "<b>"+username+"</b>";
+
+        socket.emit('connect-event', {'Name': username});
         
         // TODO 13: Change based on current ids. Add global var, join game send user id to client - Done, used the var myID in the username change above and added a socket.on for the message 'joined-game' to set the var
       }
-
-      //TODO 14:
-      socket.emit('connect-event', {'Name': usernameInput.value, 'userID': myID});
-
     });
 
     // Check when the user clicks into the username box (Reset the box from error case)
@@ -1184,7 +1315,9 @@
 
         setCurrentPlayer(1); // The host player is always player ID 1, and they're always the first current player
 
-        socket.emit('start-game', {'numQuestions': numQuestions}); // Send numQuestions back to server
+        socket.emit('start-game', {'numQuestions': numQuestions,
+                                   'qBank': qBank,
+                                   'rCate': rCate}); // Send numQuestions back to server
       }
       else // Bad input, display error
       {
@@ -1194,7 +1327,6 @@
 
     // Spin Button Pressed
     EL_spin.addEventListener('click', () => {
-      //if (EL_spin.textContent == "SPIN!") 
       if (EL_spin.style.cursor == "pointer") // Validate the wheel can currently be spun
       {
         categoryDisplay.innerHTML = "";
@@ -1217,7 +1349,7 @@
 
       // TODO 17: currentPlayer client to server: emit ang, angVel
       // server: on other clients set them
-      socket.emit('spin-wheel', {'ang': ang, 'angVel': angVel});
+      socket.emit('spin-wheel', {'angVel': angVel});
 
     });
 
@@ -1363,18 +1495,19 @@
 
         numQuestions = numQuestions - 1;
 
-        setCurrentPlayer(1);
+        //setCurrentPlayer(1); // Do this on server side
 
         sleep(1000);
 
         questionAnswered = false;
 
+        // *******DO THIS FROM SERVER*******
         // Enable answer buttons
-        for (var i = 1; i < 5; i++)
-        {
-          var currAnswer = document.getElementById("answer"+i+"Button");
-          currAnswer.style.cursor = "pointer";
-        }
+        // for (var i = 1; i < 5; i++)
+        // {
+        //   var currAnswer = document.getElementById("answer"+i+"Button");
+        //   currAnswer.style.cursor = "pointer";
+        // }
 
         jeopardyMusic.currentTime = 0.5;
         if (!muted) jeopardyMusic.play();

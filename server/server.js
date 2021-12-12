@@ -25,38 +25,46 @@ var name1 = '';
 var name2 = '';
 var name3 = '';
 var buzzerFlag = false;
+var currPlayerID = 0;
 
 // map for users socket IDs
-const userSocketIdMap = new Map(); 
+var userSocketIdMap = new Map(); 
 
 // add client to known users map
-function addClient(name, socketId)
+function addClient(id, socketId)
 {
-  if(!userSocketIdMap.has(name))
+  if(!userSocketIdMap.has(id))
   {
-    userSocketIdMap.set(name, socketId);
+    userSocketIdMap.set(id, socketId);
   }
   else
   {
-    userSocketIdMap.get(name).add(socketId);
+    userSocketIdMap.get(id).add(socketId);
   }
 }
 
 // remove client from known users map
 function removeClient(socketId)
 {
-  const names = [name1, name2, name3];
+  const ids = [player1_id, player2_id, player3_id];
 
-  for (let i = 0; i < 3; i++)
+  for (let i = 1; i <= 3; i++)
   {
-    if(userSocketIdMap.has(names[i]))
+    if (ids[i] == socketId)
     {
-      let userSocketIdValue = userSocketIdMap.get(names[i]);
+      if (i == 1) player1_id = -1;
+      if (i == 2) player2_id = -1;
+      if (i == 3) player3_id = -1;
+    }
+
+    if(userSocketIdMap.has(ids[i]))
+    {
+      let userSocketIdValue = userSocketIdMap.get(ids[i]);
       
       if(userSocketIdValue === socketId)
       {
-        userSocketIdMap.delete(names[i]);
-        console.log('user: ', names[i], ' disconnected/deleted');
+        userSocketIdMap.delete(ids[i]);
+        console.log('user: ', ids[i], ' disconnected/deleted');
       }
     }
   }
@@ -70,19 +78,13 @@ io.on('connection', (socket) => {
     playerCount+=1
 
     // add client to users list
-    addClient(msg.Name, socket.id);  
-    
-    // log entries of map 
-    for(let [key, value] of userSocketIdMap)
-    {
-      console.log('logging user: ' + key + "=" + value);
-    }
+    addClient(playerCount, socket.id);  
 
-    if(playerCount != 3)
+    if(playerCount <= 3)
     {
       if(player1_id == -1)
       {
-        player1_id = msg.ID;
+        player1_id = playerCount;
         name1 = msg.Name;
         console.log("Player1 ID: " + player1_id);
         console.log("Player1 Name: " + name1);
@@ -95,14 +97,14 @@ io.on('connection', (socket) => {
       }
       else if (player2_id == -1)
       {
-        player2_id = msg.ID;
+        player2_id = playerCount;
         name2 = msg.Name;
         console.log("Player2 ID: ", player2_id);
         console.log("Player2 Name: " + name2);
       }
       else // (player3_id == -1)
       {
-        player3_id = msg.ID;
+        player3_id = playerCount;
         name3 = msg.Name;
         console.log("Player3 ID: ", player3_id);
         console.log("Player3 Name: " + name3);
@@ -111,20 +113,41 @@ io.on('connection', (socket) => {
     else
     {
       console.log("Game only handles 3 players...")
-    }  
+    }
 
-    socket.on('update-event', () => {
-      //broadcast player ids to all players
-      socket.emit('player-ids', {"player1_ID": player1_id, 
-                                 "player2_ID": player2_id,
-                                 "player3_ID": player3_id});
-      socket.emit('player-names', {"Name1": name1,
-                                   "Name2": name2,
-                                   "Name3": name3});                         
-    })
+    // log entries of map 
+    for(let [key, value] of userSocketIdMap)
+    {
+      console.log('logging user: ' + key + "=" + value);
+    }
 
+    io.emit('player-info', {"player1_ID": player1_id, 
+                                "player2_ID": player2_id,
+                                "player3_ID": player3_id,
+                                "Name1": name1,
+                                "Name2": name2,
+                                "Name3": name3});
+
+    if (playerCount != 1)
+    {
+      socket.emit('not-host');
+    }
+    
   });
 
+  socket.on('start-game', (msg) => {
+    io.emit('starting-game', {"numQuestions": msg.numQuestions,
+                              "qBank": msg.qBank,
+                              "rCate": msg.rCate});
+  });
+
+  socket.on('spin-wheel', (msg) => {
+    socket.broadcast.emit('spinning-wheel', {"angVel": msg.angVel});
+  });
+
+  socket.on('pv-chosen', (msg) => {
+    io.emit('pv-chosen-replicated', {"pv": msg.pv});
+  });
 
   socket.on('update-ui', (msg) => {
     console.log('recv update-ui msg from: ', socket.id);
