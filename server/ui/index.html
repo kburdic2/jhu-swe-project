@@ -88,14 +88,12 @@
   <script src="script.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    (function() {
+
     //-------------------------Variables-------------------------//
     
-    // Socket io
     var socket = io();
-    var playerId = Math.floor(Math.random() * 100);
-    var connectAck = document.getElementById('connectButton');
-    var buzzInAck = document.getElementById('buzzerButton');
+    // var connectAck = document.getElementById('connectButton');
+    // var buzzInAck = document.getElementById('buzzerButton');
 
     // Player Data
     var player1_Name = document.getElementById('player1Name');
@@ -106,12 +104,21 @@
     var player2Points = document.getElementById('player2Points');
     var player3Points = document.getElementById('player3Points');
 
-    var player1ID;
-    var player2ID;
-    var player3ID;
+    var player1ID = Math.floor(Math.random() * 100);
+    var player2ID = Math.floor(Math.random() * 100);
+    var player3ID = Math.floor(Math.random() * 100);
 
-    var buzzedInPlayer;
+    //  TODO 1: use vars
+    var firstPlayerToBuzz;
+    var currentPlayer;
     var serverID;
+    var myID = 0;
+    var msgTime = 0;
+
+    // TODO 2: add time elapsed since question was shown, timestamp not blank
+    var timeElapsed;
+    var playerTimestamp;
+    // TODO 3: if no players buzz in
 
     // Grouped Screen Elements by IDs
     var alwaysVisible = document.getElementById("alwaysVisible");
@@ -219,7 +226,7 @@
   ];
 
     // Wheel colored sectors
-    let sectors = [{
+  var sectors = [{
       color: "#fff000",
       label: ""
     },
@@ -258,128 +265,6 @@
   const friction = 0.991; // 0.995=soft, 0.99=mid, 0.98=hard
   let angVel = 0; // Angular velocity
   let ang = 0; // Angle in radians
-
-  //--------------------- Client Messages ---------------------
-
-  // TODO: Merge with user interface event listeners
-  // TODO: Fix player cursors
-
-  // ------ Event Listeners -----
-  // CONNECT
-  connectAck.addEventListener('click', function(e) {
-    console.log('Username: ', usernameInput);
-    socket.emit('connect-event', {Name: usernameInput.value});
-  });
-
-  // BUZZ IN
-  buzzInAck.addEventListener('click', function(e) {
-      var now = new Date();
-      console.log(now.toUTCString());
-      var timeClicked = now.toUTCString();
-      serverID = serverID;
-      //TODO: buzzedInPlayer
-      socket.emit('buzz-in', {'timeClicked': timeClicked, 'serverID': serverID, 'buzzedInPlayer': buzzedInPlayer});
-  });
-
-  // POINT VALUE
-  // CHOOSE ANSWER
-  // SPIN WHEEL
-  // -----------------------------
-
-  // SCORE UPDATE
-  socket.on('score-update', (data) => {
-    // TODO: fix id to match current player
-    // playerID = data.playerId;
-    // serverID = data.serverId;
-
-    console.log("Player Scores: ", data);
-    player1Points.value = data.scores1;
-    player2Points.value = data.scores2;
-    player3Points.value = data.scores3;
-
-    document.getElementById("player1Points").innerHTML = "<b>"+data.scores1+"</b>";
-    document.getElementById("player2Points").innerHTML = "<b>"+data.scores2+"</b>";
-    document.getElementById("player3Points").innerHTML = "<b>"+data.scores3+"</b>";
-
-    socket.emit('score-update', {'player1Points': player1Points, 'player2Points': player2Points, 'player3Points': player3Points});
-
-  })
-
-  // UPDATE GAME STATE
-  socket.on('update-game-state', (data) => {
-    syncAnswerTime = data.syncAnswerTime;
-    serverID = data.serverID;
-
-    socket.emit('update-game-state', {'syncAnswerTime': syncAnswerTime, 'serverID': serverID});
-  })
-
-  // UPDATE QUESTION TIMER
-  socket.on('update-question-timer', (data) => {
-    syncBuzzerTime = data.syncBuzzerTime;
-    serverID = data.serverID;
-
-    socket.emit('update-question-timer', {'syncBuzzerTime': syncBuzzerTime, 'serverID': serverID});
-  })
-
-  // UPDATE QUESTION
-  socket.on('update-question', (data) => {
-    questionsLeft = data.questionsLeft;
-    currentCategory = data.currentCategory;
-    currentQuestion = data.currentQuestion;
-
-    answer = data.answer;
-    optionA = data.optionA;
-    optionB = data.optionB;
-    optionC = data.optionC;
-    optionD = data.optionD;
-
-    serverID = data.serverID;
-
-    socket.emit('update-question', {'questionsLeft': questionsLeft, 'currentCategory': currentCategory,
-                                    'currentQuestion': currentQuestion, 'answer': answer, 
-                                    'optionA': optionA, 'optionB': optionB, 'optionC': optionC, 'optionD': optionD});
-  })
-
-  // UPDATE UI
-  socket.on('update-ui', (data) => {
-    wheelColor = data.wheelColor;
-    wheelCategory = data.wheelCategory;
-
-    currentPlayer = data.currentPlayer;
-    hostPlayer = data.hostPlayer;
-
-    player1_Name.value = data.name1;
-    player2_Name.value = data.name2;
-    player3_Name.value = data.name3; 
-      
-    player1ID = data.id1;
-    player2ID = data.id2;
-    player3ID = data.id3;
-
-    player1Points = data.player1Points;
-    player2Points = data.player2Points;
-    player3Points = data.player3Points;
-
-    questionsLeft = data.questionsLeft;
-    currentCategory = data.currentCategory;
-    currentQuestion = data.currentQuestion;
-    answer = data.answer;
-    optionA = data.optionA;
-    optionB = data.optionB;
-    optionC = data.optionC;
-    optionD = data.optionD;
-
-    serverID = data.serverID;
-
-    socket.emit('update-ui', {'wheelColor': wheelColor, 'wheelCategory': wheelCategory, 
-                              'currentPlayer': currentPlayer, 'hostPlayer': hostPlayer,
-                              'player1_Name': player1_Name, 'player2_Name': player2_Name, 'player3_Name': player3_Name,
-                              'player1ID': player1ID, 'player2ID': player2ID, 'player3ID': player3ID,
-                              'player1Points': player1Points, 'player2Points': player2Points, 'player3Points': player3Points,
-                              'questionsLeft': questionsLeft, 'currentCategory': currentCategory, 'currentQuestion': currentQuestion,
-                              'answer': answer, 'optionA': optionA, 'optionB': optionB, 'optionC': optionC, 'optionD': optionD});
-
-  })
 
   //-------------------------Functions-------------------------//
 
@@ -439,6 +324,22 @@
         setTimeout(decrementQuestionTimer, 1000, -1);
       }
     }
+
+    // TODO 4: store timestamps for each player that buzzes in
+    // playerTimestamp
+    
+    // TODO 5: on SERVER side, once all timestamps are received, compare
+    // Server will send back the currentPlayer to all clients and set the player cursors, and available interactions
+    // Update leaderboard UI
+
+    // TODO 6: UPDATE GAME STATE
+    // on CLIENT side emit to server, timestamp, playerID (for all messages)
+    
+    // socket.on('update-game-state', (data) => {
+        // syncAnswerTime = data.syncAnswerTime;
+        // serverID = data.serverID;
+    // socket.emit('update-game-state', {'syncAnswerTime': syncAnswerTime, 'serverID': serverID});
+
   }
 
   /*
@@ -515,7 +416,18 @@
     {
       nextQuestion();
     }
+
   }
+
+  //  TODO 7: after click event, initiate question timer (going from one screen to another)
+  // TODO 8: only the host should see host menu and play button. After host chooses categories, emit
+  // categories to the SERVER which sends back to all CLIENTS (qbank)
+
+  //   socket.on('update-question-timer', (data) => {
+    //   syncBuzzerTime = data.syncBuzzerTime;
+    //   serverID = data.serverID;
+  //   socket.emit('update-question-timer', {'syncBuzzerTime': syncBuzzerTime, 'serverID': serverID});
+  // })
 
   /*
   Fade out audio function
@@ -573,6 +485,8 @@
     // Display winner
     let {winner, winnerPoints} = findWinner();
     document.getElementById("winnerLabel").innerHTML = (winner+" has won with "+winnerPoints+" points!").bold();
+
+    // TODO 9: have server update current player to host at end of game
 
     // Reset answer buttons
     for (let i = 1; i < 5; i++)
@@ -684,7 +598,7 @@
   /*
   Find winner function
     Determines which player has the most points.
-    TO DO: Implement multiple winners, aka ties
+    TO DO 10: Implement multiple winners, aka ties
   */
   function findWinner()
   {
@@ -1076,7 +990,105 @@
     engine(); // Start engine
     if (!muted) themeMusic.play(); // Start lobby music
 
-    //-------------------------Events-------------------------//
+
+  //--------------------- Client Messages -----------------------------------------------------------
+
+  // TODO 10: May integrate these client messages
+  // TODO 11: Fix player cursors
+
+  // Send this message to the client when they join the server so the client knows which user they are
+  socket.on('joined-game', (data) => {
+    myID = data.userID;
+  })
+
+  // Send this message to the client when they join the server so the client knows which user they are
+  socket.on('can-buzz-in', (data) => {
+    +new Date;
+    msgTime = Date.now();
+  })
+
+  // UPDATE QUESTION
+  socket.on('update-question', (data) => {
+    questionsLeft = data.questionsLeft;
+    currentCategory = data.currentCategory;
+    currentQuestion = data.currentQuestion;
+
+    answer = data.answer;
+    optionA = data.optionA;
+    optionB = data.optionB;
+    optionC = data.optionC;
+    optionD = data.optionD;
+
+    serverID = data.serverID;
+
+    socket.emit('update-question', {'questionsLeft': questionsLeft, 'currentCategory': currentCategory,
+                                    'currentQuestion': currentQuestion, 'answer': answer, 
+                                    'optionA': optionA, 'optionB': optionB, 'optionC': optionC, 'optionD': optionD});
+  })
+
+  // UPDATE UI
+  socket.on('update-ui', (data) => {
+    wheelColor = data.wheelColor;
+    wheelCategory = data.wheelCategory;
+
+    currentPlayer = data.currentPlayer;
+
+    player1_Name.value = data.name1;
+    player2_Name.value = data.name2;
+    player3_Name.value = data.name3; 
+      
+    player1ID = data.id1;
+    player2ID = data.id2;
+    player3ID = data.id3;
+
+    player1Points = data.player1Points;
+    player2Points = data.player2Points;
+    player3Points = data.player3Points;
+
+    questionsLeft = data.questionsLeft;
+    currentCategory = data.currentCategory;
+    currentQuestion = data.currentQuestion;
+    answer = data.answer;
+    optionA = data.optionA;
+    optionB = data.optionB;
+    optionC = data.optionC;
+    optionD = data.optionD;
+
+    serverID = data.serverID;
+
+    socket.emit('update-ui', {'wheelColor': wheelColor, 'wheelCategory': wheelCategory, 
+                              'currentPlayer': currentPlayer,
+                              'player1_Name': player1_Name, 'player2_Name': player2_Name, 'player3_Name': player3_Name,
+                              'player1ID': player1ID, 'player2ID': player2ID, 'player3ID': player3ID,
+                              'player1Points': player1Points, 'player2Points': player2Points, 'player3Points': player3Points,
+                              'questionsLeft': questionsLeft, 'currentCategory': currentCategory, 'currentQuestion': currentQuestion,
+                              'answer': answer, 'optionA': optionA, 'optionB': optionB, 'optionC': optionC, 'optionD': optionD});
+
+  })
+
+    // SCORE UPDATE
+    socket.on('score-update', (data) => {
+    // TODO 12: fix id to match current player
+    playerID = data.playerId;
+    serverID = data.serverId;
+
+    console.log("Player Scores: ", data);
+    player1Points.value = data.scores1;
+    player2Points.value = data.scores2;
+    player3Points.value = data.scores3;
+
+    document.getElementById("player1Points").innerHTML = "<b>"+data.scores1+"</b>";
+    document.getElementById("player2Points").innerHTML = "<b>"+data.scores2+"</b>";
+    document.getElementById("player3Points").innerHTML = "<b>"+data.scores3+"</b>";
+
+    socket.emit('score-update', {'player1Points': player1Points, 'player2Points': player2Points, 'player3Points': player3Points});
+
+  })
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+
+  //-------------------------Events-------------------------//
 
     // Mute Button Pressed
     muteButton.addEventListener('click', () => {
@@ -1122,8 +1134,14 @@
         lobbyScreen.style.visibility = 'visible';
         playerList.style.visibility = 'visible';
 
-        document.getElementById("player1Name").innerHTML = "<b>"+username+"</b>";
+        document.getElementById("player"+myID+"Name").innerHTML = "<b>"+username+"</b>";
+        
+        // TODO 13: Change based on current ids. Add global var, join game send user id to client - Done, used the var myID in the username change above and added a socket.on for the message 'joined-game' to set the var
       }
+
+      //TODO 14:
+      socket.emit('connect-event', {'Name': usernameInput.value, 'userID': myID});
+
     });
 
     // Check when the user clicks into the username box (Reset the box from error case)
@@ -1164,7 +1182,9 @@
 
         questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
 
-        setCurrentPlayer(1); // This will need to change when implementing networking
+        setCurrentPlayer(1); // The host player is always player ID 1, and they're always the first current player
+
+        socket.emit('start-game', {'numQuestions': numQuestions}); // Send numQuestions back to server
       }
       else // Bad input, display error
       {
@@ -1174,7 +1194,8 @@
 
     // Spin Button Pressed
     EL_spin.addEventListener('click', () => {
-      if (EL_spin.textContent == "SPIN!") // Validate the wheel can currently be spun
+      //if (EL_spin.textContent == "SPIN!") 
+      if (EL_spin.style.cursor == "pointer") // Validate the wheel can currently be spun
       {
         categoryDisplay.innerHTML = "";
         EL_spin.textContent == ""
@@ -1193,6 +1214,11 @@
           angVel = rand(0.25, 0.35);
         }
       }
+
+      // TODO 17: currentPlayer client to server: emit ang, angVel
+      // server: on other clients set them
+      socket.emit('spin-wheel', {'ang': ang, 'angVel': angVel});
+
     });
 
     //----------Point Value Buttons----------//
@@ -1215,6 +1241,9 @@
         answerTimer.textContent = PVtimerLength;
         answerTimer.innerHTML = answerTimer.innerHTML.bold();
         setTimeout(decrementQuestionTimer, 1000, 0);
+
+        // TODO 18: emit pv
+        socket.emit('pv-chosen', {'pv': pointValue});
       }
     });
     // PV2 Button Pressed
@@ -1236,6 +1265,9 @@
         answerTimer.textContent = PVtimerLength;
         answerTimer.innerHTML = answerTimer.innerHTML.bold();
         setTimeout(decrementQuestionTimer, 1000, 1);
+
+        // TODO 19: emit pv
+        socket.emit('pv-chosen', {'pv': pointValue});
       }
     });
     // PV3 Button Pressed
@@ -1257,6 +1289,9 @@
         answerTimer.textContent = PVtimerLength;
         answerTimer.innerHTML = answerTimer.innerHTML.bold();
         setTimeout(decrementQuestionTimer, 1000, 2);
+
+        // TODO 20: emit pv
+        socket.emit('pv-chosen', {'pv': pointValue});
       }
     });
     // PV4 Button Pressed
@@ -1278,6 +1313,9 @@
         answerTimer.textContent = PVtimerLength;
         answerTimer.innerHTML = answerTimer.innerHTML.bold();
         setTimeout(decrementQuestionTimer, 1000, 3);
+
+        // TODO 21: emit pv
+        socket.emit('pv-chosen', {'pv': pointValue});
       }
     });
     // PV5 Button Pressed
@@ -1299,11 +1337,18 @@
         answerTimer.textContent = PVtimerLength;
         answerTimer.innerHTML = answerTimer.innerHTML.bold();
         setTimeout(decrementQuestionTimer, 1000, 4);
+
+        // TODO 22: emit pv
+        socket.emit('pv-chosen', {'pv': pointValue});
       }
     });
 
     // Buzz-In Button Pressed
     buzzerButton.addEventListener('click', () => {
+
+      // TODO 23: Store timestamp of each player. When server receives a message that the player has chosen a point value. 
+      // set global var timestamp var
+
       if (buzzerButton.style.cursor == "pointer")
       {
         buzzerAudio.currentTime = 0.1;
@@ -1337,17 +1382,26 @@
         answerTimer.innerHTML = answerTimerLength.bold();
         setTimeout(decrementQuestionTimer, 1000, -1);
       }
+
+      +new Date;
+      var timeClicked = Date.now() - msgTime;
+
+      //TODO 24: buzzIn, buzzedInPlayer
+      socket.emit('buzzed-in', {'userID': myID, 'timeClicked': timeClicked});
+
     });
 
     //----------Answer Buttons----------//
     // Answer 1 Pressed
     answer1Button.addEventListener('click', () => {
+      var correct = false;
       if (answer1Button.style.cursor == "pointer")
       {
         answerTimer.textContent = "1"; // Stop the timer so when we re-use it for the point value display, it won't glitch and halt the game
         jeopardyMusic.pause();
-        if (answer1Text.innerHTML == correctAnswer)
+        if (answer1Text.innerHTML == correctAnswer) // Correct answer
         {
+          correct = true;
           applauseAudio.currentTime = 0.5;
           if (!muted) applauseAudio.play();
           answer1Button.src = "assets/CorrectAnswerButton.png";
@@ -1384,6 +1438,9 @@
       }
 
       questionAnswered = true;
+      // TODO 25: emit correct - to calculate points (add/subtract)
+      // SERVER side to CLIENT - currentPlayer id (right or wrong) store current point value
+      socket.emit('question-answered', {'correct': correct, 'pv': pointValue});
 
       if (isEmpty(category))
       {
@@ -1403,12 +1460,14 @@
     });
     // Answer 2 Pressed
     answer2Button.addEventListener('click', () => {
+      var correct = false;
       if (answer2Button.style.cursor == "pointer")
       {
         answerTimer.textContent = "1"; // Stop the timer so when we re-use it for the point value display, it won't glitch and halt the game
         jeopardyMusic.pause();
         if (answer2Text.innerHTML == correctAnswer)
         {
+          correct = true;
           applauseAudio.currentTime = 0.5;
           if (!muted) applauseAudio.play();
           answer2Button.src = "assets/CorrectAnswerButton.png";
@@ -1446,6 +1505,8 @@
 
       questionAnswered = true;
 
+      socket.emit('question-answered', {'correct': correct, 'pv': pointValue});
+
       if (isEmpty(category))
       {
         removeCategory();
@@ -1464,12 +1525,14 @@
     });
     // Answer 3 Pressed
     answer3Button.addEventListener('click', () => {
+      var correct = false;
       if (answer3Button.style.cursor == "pointer")
       {
         answerTimer.textContent = "1"; // Stop the timer so when we re-use it for the point value display, it won't glitch and halt the game
         jeopardyMusic.pause();
         if (answer3Text.innerHTML == correctAnswer)
         {
+          correct = true;
           applauseAudio.currentTime = 0.5;
           if (!muted) applauseAudio.play();
           answer3Button.src = "assets/CorrectAnswerButton.png";
@@ -1507,6 +1570,8 @@
 
       questionAnswered = true;
 
+      socket.emit('question-answered', {'correct': correct, 'pv': pointValue});
+
       if (isEmpty(category))
       {
         removeCategory();
@@ -1525,12 +1590,14 @@
     });
     // Answer 4 Pressed
     answer4Button.addEventListener('click', () => {
+      var correct = false;
       if (answer4Button.style.cursor == "pointer")
       {
         answerTimer.textContent = "1"; // Stop the timer so when we re-use it for the point value display, it won't glitch and halt the game
         jeopardyMusic.pause();
         if (answer4Text.innerHTML == correctAnswer)
         {
+          correct = true;
           applauseAudio.currentTime = 0.5;
           if (!muted) applauseAudio.play();
           answer4Button.src = "assets/CorrectAnswerButton.png";
@@ -1568,6 +1635,8 @@
 
       questionAnswered = true;
 
+      socket.emit('question-answered', {'correct': correct, 'pv': pointValue});
+
       if (isEmpty(category))
       {
         removeCategory();
@@ -1585,6 +1654,5 @@
       }
     });
 
-  })();
   </script>
 </html>
