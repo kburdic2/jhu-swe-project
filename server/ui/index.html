@@ -112,13 +112,12 @@
     var firstPlayerToBuzz;
     var currentPlayer;
     var serverID;
-    var myID = 0;
     var msgTime = 0;
 
     // TODO 2: add time elapsed since question was shown, timestamp not blank
     var timeElapsed;
     var playerTimestamp;
-    // TODO 3: if no players buzz in
+    var buzzedIn = false;
 
     // Grouped Screen Elements by IDs
     var alwaysVisible = document.getElementById("alwaysVisible");
@@ -290,56 +289,16 @@
   function decrementBuzzInTimer(){
     buzzInTimer.textContent = (parseInt(buzzInTimer.textContent) - 1).toString();
     buzzInTimer.innerHTML = buzzInTimer.innerHTML.bold();
-    if (parseInt(buzzInTimer.textContent) > 0)
+    if (parseInt(buzzInTimer.textContent) > 0 && !buzzedIn)
     {
       setTimeout(decrementBuzzInTimer, 1000);
     }
     else if (parseInt(buzzInTimer.textContent) == 0 && buzzInScreen.style.visibility == 'visible') // Timer expired on buzz in screen
     {
       buzzerButton.style.cursor = "default";
-      answerDisplay.textContent = "Answer: " + correctAnswer;
-      answerDisplay.innerHTML = answerDisplay.innerHTML.bold();
 
-      // Decrement questions
-      numQuestions = numQuestions - 1;
-      questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
-  
-      qBank[category][0][(pointValue/10)-1] = false; // Remove question from list
-
-      if (isEmpty(category))
-      {
-        removeCategory();
-      }
-
-      // Wait 5 seconds before moving to next question or next game
-      if (numQuestions == 0)
-      {
-        setTimeout(resetGame, 5000);
-        answerTimer.innerText = '1';
-        setTimeout(decrementQuestionTimer, 1000, -1);
-      }
-      else
-      {
-        answerTimer.innerText = answerDisplayLength;
-        setTimeout(decrementQuestionTimer, 1000, -1);
-      }
+      socket.emit('buzzed-in', {'timeClicked': 9999999999});
     }
-
-    // TODO 4: store timestamps for each player that buzzes in
-    // playerTimestamp
-    
-    // TODO 5: on SERVER side, once all timestamps are received, compare
-    // Server will send back the currentPlayer to all clients and set the player cursors, and available interactions
-    // Update leaderboard UI
-
-    // TODO 6: UPDATE GAME STATE
-    // on CLIENT side emit to server, timestamp, playerID (for all messages)
-    
-    // socket.on('update-game-state', (data) => {
-        // syncAnswerTime = data.syncAnswerTime;
-        // serverID = data.serverID;
-    // socket.emit('update-game-state', {'syncAnswerTime': syncAnswerTime, 'serverID': serverID});
-
   }
 
   /*
@@ -993,17 +952,77 @@
 
   //--------------------- Client Messages -----------------------------------------------------------
 
-  // TODO 10: May integrate these client messages
-  // TODO 11: Fix player cursors
 
-  // Send this message to the client when they join the server so the client knows which user they are
-  socket.on('joined-game', (data) => {
-    myID = data.userID;
+  socket.on('set-currentPlayer', (data) => {
+    setCurrentPlayer(data.currPlr);
+    buzzInScreen.style.visibility = 'hidden';
+    answerScreen.style.visibility = 'visible';
+    spinScreen.style.visibility = 'hidden';
+    answerTimer.style.visibility = 'visible';
+
+    qBank[category][0][(pointValue/10)-1] = false;
+
+    numQuestions = numQuestions - 1;
+
+    sleep(1000);
+
+    questionAnswered = false;
+
+    // Enable answer buttons
+    for (var i = 1; i < 5; i++)
+    {
+      var currAnswer = document.getElementById("answer"+i+"Button");
+      currAnswer.style.cursor = "pointer";
+    }
+
+    // Enable PV buttons
+    for (var i = 1; i <= 5; i++)
+    {
+      var currPVButton = document.getElementById("PVButton"+i);
+      currPVButton.style.cursor = "pointer";
+    }
+
+    jeopardyMusic.currentTime = 0.5;
+    if (!muted) jeopardyMusic.play();
+
+    answerTimer.innerHTML = answerTimerLength.bold();
+    setTimeout(decrementQuestionTimer, 1000, -1);
   })
 
-  socket.on('can-buzz-in', (data) => {
-    +new Date;
-    msgTime = Date.now();
+  socket.on('set-not-currentPlayer', (data) => {
+    setCurrentPlayer(data.currPlr);
+    buzzInScreen.style.visibility = 'hidden';
+    answerScreen.style.visibility = 'visible';
+    spinScreen.style.visibility = 'hidden';
+    answerTimer.style.visibility = 'visible';
+
+    qBank[category][0][(pointValue/10)-1] = false;
+
+    numQuestions = numQuestions - 1;
+
+    sleep(1000);
+
+    questionAnswered = false;
+
+    // Enable answer buttons
+    for (var i = 1; i < 5; i++)
+    {
+      var currAnswer = document.getElementById("answer"+i+"Button");
+      currAnswer.style.cursor = "default";
+    }
+
+    // Enable PV buttons
+    for (var i = 1; i <= 5; i++)
+    {
+      var currPVButton = document.getElementById("PVButton"+i);
+      currPVButton.style.cursor = "default";
+    }
+
+    jeopardyMusic.currentTime = 0.5;
+    if (!muted) jeopardyMusic.play();
+
+    answerTimer.innerHTML = answerTimerLength.bold();
+    setTimeout(decrementQuestionTimer, 1000, -1);
   })
 
   socket.on('not-host', () => {
@@ -1011,6 +1030,35 @@
     document.getElementById('numberOfQuestions').style.visibility = "hidden";
     document.getElementById('questionNumberInput').style.visibility = "hidden";
     document.getElementById('hostMenuLabel').style.visibility = "hidden";
+  })
+
+  socket.on('buzzer-timed-out', () => {
+    answerDisplay.textContent = "Answer: " + correctAnswer;
+    answerDisplay.innerHTML = answerDisplay.innerHTML.bold();
+
+    // Decrement questions
+    numQuestions = numQuestions - 1;
+    questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
+
+    qBank[category][0][(pointValue/10)-1] = false; // Remove question from list
+
+    if (isEmpty(category))
+    {
+      removeCategory();
+    }
+
+    // Wait 5 seconds before moving to next question or next game
+    if (numQuestions == 0)
+    {
+      setTimeout(resetGame, 5000);
+      answerTimer.innerText = '1';
+      setTimeout(decrementQuestionTimer, 1000, -1);
+    }
+    else
+    {
+      answerTimer.innerText = answerDisplayLength;
+      setTimeout(decrementQuestionTimer, 1000, -1);
+    }
   })
 
   socket.on('spinning-wheel', (data) => {
@@ -1074,6 +1122,7 @@
 
   socket.on('pv-chosen-replicated', (data) => {
     pointValue = data.pv;
+    PVindex = (data.pv/10)-1;
 
     document.getElementById("PVButton"+(pointValue/10)).src = "assets/SelectedPointValueButton.png";
 
@@ -1081,7 +1130,7 @@
 
     answerTimer.textContent = PVtimerLength;
     answerTimer.innerHTML = answerTimer.innerHTML.bold();
-    setTimeout(decrementQuestionTimer, 1000, 0);
+    setTimeout(decrementQuestionTimer, 1000, PVindex);
 
     +new Date;
     msgTime = Date.now();
@@ -1267,11 +1316,8 @@
         lobbyScreen.style.visibility = 'visible';
         playerList.style.visibility = 'visible';
 
-        //document.getElementById("player"+myID+"Name").innerHTML = "<b>"+username+"</b>";
-
         socket.emit('connect-event', {'Name': username});
         
-        // TODO 13: Change based on current ids. Add global var, join game send user id to client - Done, used the var myID in the username change above and added a socket.on for the message 'joined-game' to set the var
       }
     });
 
@@ -1477,51 +1523,18 @@
 
     // Buzz-In Button Pressed
     buzzerButton.addEventListener('click', () => {
-
-      // TODO 23: Store timestamp of each player. When server receives a message that the player has chosen a point value. 
-      // set global var timestamp var
-
       if (buzzerButton.style.cursor == "pointer")
       {
         buzzerAudio.currentTime = 0.1;
         if (!muted) buzzerAudio.play();
 
-        buzzInScreen.style.visibility = 'hidden';
-        answerScreen.style.visibility = 'visible';
-        spinScreen.style.visibility = 'hidden';
-        answerTimer.style.visibility = 'visible';
+        buzzerButton.style.cursor = "default";
+        buzzedIn = true;
 
-        qBank[category][0][(pointValue/10)-1] = false;
-
-        numQuestions = numQuestions - 1;
-
-        //setCurrentPlayer(1); // Do this on server side
-
-        sleep(1000);
-
-        questionAnswered = false;
-
-        // *******DO THIS FROM SERVER*******
-        // Enable answer buttons
-        // for (var i = 1; i < 5; i++)
-        // {
-        //   var currAnswer = document.getElementById("answer"+i+"Button");
-        //   currAnswer.style.cursor = "pointer";
-        // }
-
-        jeopardyMusic.currentTime = 0.5;
-        if (!muted) jeopardyMusic.play();
-
-        answerTimer.innerHTML = answerTimerLength.bold();
-        setTimeout(decrementQuestionTimer, 1000, -1);
+        +new Date;
+        var timeClicked = Date.now() - msgTime;
+        socket.emit('buzzed-in', {'timeClicked': timeClicked});
       }
-
-      +new Date;
-      var timeClicked = Date.now() - msgTime;
-
-      //TODO 24: buzzIn, buzzedInPlayer
-      socket.emit('buzzed-in', {'userID': myID, 'timeClicked': timeClicked});
-
     });
 
     //----------Answer Buttons----------//

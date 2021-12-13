@@ -26,6 +26,7 @@ var name2 = '';
 var name3 = '';
 var buzzerFlag = false;
 var currPlayerID = 0;
+var timestamps = [0, 0, 0];
 
 // map for users socket IDs
 var userSocketIdMap = new Map(); 
@@ -148,6 +149,68 @@ io.on('connection', (socket) => {
   socket.on('pv-chosen', (msg) => {
     io.emit('pv-chosen-replicated', {"pv": msg.pv});
   });
+
+  socket.on('buzzed-in', (msg) => {
+    console.log("buzzed in!");
+    for(let [key, value] of userSocketIdMap)
+    {
+      if (socket.id == value)
+      {
+        console.log(key);
+        timestamps[key-1] = msg.timeClicked;
+        console.log(timestamps);
+      }
+    }
+    setTimeout(waitForTimestamps, 100);
+  });
+
+  function waitForTimestamps()
+  {
+    console.log("waitForTimestamps");
+    if (timestamps.slice(0,3).includes(0))
+    {
+      setTimeout(waitForTimestamps, 100);
+    }
+    else
+    {
+      var shortestTime = 0;
+      var shortestTimePlayerID = 0;
+      for (let i = 0; i < 3; i++)
+      {
+        if (shortestTime == 0 || timestamps[i] < shortestTime)
+        {
+          shortestTime = timestamps[i];
+          shortestTimePlayerID = i+1;
+        }
+      }
+      console.log("shortest time:");
+      console.log(shortestTime);
+      if (shortestTime != 9999999999)
+      {
+        setCurrentPlayer(shortestTimePlayerID);
+      }
+      else
+      {
+        io.emit('buzzer-timed-out');
+      }
+      timestamps = [0, 0, 0];
+    }
+  }
+
+  function setCurrentPlayer(ID)
+  {
+    for(let [key, value] of userSocketIdMap)
+    {
+      if (ID == key)
+      {
+        socket.to(value).emit('set-currentPlayer', {'currPlr': ID});
+      }
+      else
+      {
+        socket.to(value).emit('set-not-currentPlayer', {'currPlr': ID});
+      }
+    }
+  }
 
   socket.on('update-ui', (msg) => {
     console.log('recv update-ui msg from: ', socket.id);
