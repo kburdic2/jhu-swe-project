@@ -296,7 +296,7 @@
     else if (parseInt(buzzInTimer.textContent) == 0 && buzzInScreen.style.visibility == 'visible') // Timer expired on buzz in screen
     {
       buzzerButton.style.cursor = "default";
-
+      console.log("buzzer timed out!");
       socket.emit('buzzed-in', {'timeClicked': 9999999999});
     }
   }
@@ -489,9 +489,8 @@
       document.getElementById("answer"+i+"Button").src = "assets/AnswerButton.png";
     }
     questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
-    EL_spin.innerHTML = "SPIN!".bold();
-    EL_spin.style.cursor = "pointer";
     categoryDisplay.innerText = "";
+    socket.emit('let-currPlr-spin');
   }
 
   /*
@@ -830,7 +829,7 @@
       ctx.rotate(ang + arc / 2);
       ctx.textAlign = "right";
       ctx.fillStyle = "#000000";
-      ctx.font = "bold 20px sans-serif";
+      ctx.font = "bold 12px sans-serif";
       ctx.fillText(sector.label, rad - 10, 10);
       ctx.restore();
     }
@@ -1032,6 +1031,12 @@
     document.getElementById('hostMenuLabel').style.visibility = "hidden";
   })
 
+  socket.on('let-spin', () => {
+    console.log("letting currplr spin");
+    EL_spin.innerHTML = "SPIN!".bold();
+    EL_spin.style.cursor = "pointer";
+  })
+
   socket.on('buzzer-timed-out', () => {
     answerDisplay.textContent = "Answer: " + correctAnswer;
     answerDisplay.innerHTML = answerDisplay.innerHTML.bold();
@@ -1186,6 +1191,68 @@
         player3Points.innerText = "0";
         player3_Name.innerText = data.Name3;
       }
+    }
+  })
+
+  socket.on('answered', (data) => {
+    console.log(data);
+    if (data.answer == correctAnswer)
+    {
+      addPoints(data.currPlr, parseInt(document.getElementById("player"+data.currPlr+"Points").textContent));
+      applauseAudio.currentTime = 0.5;
+      if (!muted) applauseAudio.play();
+
+      // Display answer
+      for (var i = 1; i < 5; i++)
+      {
+        var currAnswer = document.getElementById("answer"+i+"Button");
+        var currAnswerText = document.getElementById("answer"+i+"Text");
+        if (currAnswerText.textContent == correctAnswer)
+        {
+          currAnswer.src = "assets/CorrectAnswerButton.png";
+        }
+      }
+    }
+    else
+    {
+      subtractPoints(data.currPlr, parseInt(document.getElementById("player"+data.currPlr+"Points").textContent));
+      awwAudio.currentTime = 0.5;
+      if (!muted) awwAudio.play();
+
+      // Display answer
+      for (var i = 1; i < 5; i++)
+      {
+        var currAnswer = document.getElementById("answer"+i+"Button");
+        var currAnswerText = document.getElementById("answer"+i+"Text");
+        if (currAnswerText.textContent == correctAnswer)
+        {
+          currAnswer.src = "assets/CorrectAnswerButton.png";
+        }
+        else if (currAnswerText.textContent == data.answer)
+        {
+          currAnswer.src = "assets/IncorrectAnswerButton.png";
+        }
+      }
+    }
+    answerTimer.textContent = "1"; // Stop the timer so when we re-use it for the point value display, it won't glitch and halt the game
+    jeopardyMusic.pause();
+
+    questionAnswered = true;
+      
+    if (isEmpty(category))
+    {
+      removeCategory();
+    }
+
+    buzzInTimer.innerHTML = "8";
+    answerTimer.style.visibility = 'hidden';
+    if (numQuestions > 0)
+    {
+      setTimeout(nextQuestion, 5000);
+    }
+    else
+    {
+      setTimeout(resetGame, 5000);
     }
   })
 
@@ -1586,7 +1653,7 @@
       questionAnswered = true;
       // TODO 25: emit correct - to calculate points (add/subtract)
       // SERVER side to CLIENT - currentPlayer id (right or wrong) store current point value
-      socket.emit('question-answered', {'correct': correct, 'pv': pointValue});
+      socket.emit('question-answered', {'answer': answer1Text.innerHTML, 'pv': pointValue});
 
       if (isEmpty(category))
       {
@@ -1651,7 +1718,7 @@
 
       questionAnswered = true;
 
-      socket.emit('question-answered', {'correct': correct, 'pv': pointValue});
+      socket.emit('question-answered', {'answer': answer2Text.innerHTML, 'pv': pointValue});
 
       if (isEmpty(category))
       {
@@ -1716,7 +1783,7 @@
 
       questionAnswered = true;
 
-      socket.emit('question-answered', {'correct': correct, 'pv': pointValue});
+      socket.emit('question-answered', {'answer': answer3Text.innerHTML, 'pv': pointValue});
 
       if (isEmpty(category))
       {
@@ -1781,7 +1848,7 @@
 
       questionAnswered = true;
 
-      socket.emit('question-answered', {'correct': correct, 'pv': pointValue});
+      socket.emit('question-answered', {'answer': answer4Text.innerHTML, 'pv': pointValue});
 
       if (isEmpty(category))
       {

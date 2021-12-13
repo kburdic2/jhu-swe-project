@@ -27,6 +27,7 @@ var name3 = '';
 var buzzerFlag = false;
 var currPlayerID = 0;
 var timestamps = [0, 0, 0];
+var setCurrPlr = false;
 
 // map for users socket IDs
 var userSocketIdMap = new Map(); 
@@ -164,10 +165,16 @@ io.on('connection', (socket) => {
     setTimeout(waitForTimestamps, 100);
   });
 
+  function resetTimestamps()
+  {
+    timestamps = [0, 0, 0];
+  }
+
   function waitForTimestamps()
   {
     console.log("waitForTimestamps");
-    if (timestamps.slice(0,3).includes(0))
+    console.log(timestamps);
+    if (timestamps.includes(0))
     {
       setTimeout(waitForTimestamps, 100);
     }
@@ -191,11 +198,17 @@ io.on('connection', (socket) => {
       }
       else
       {
-        io.emit('buzzer-timed-out');
+        socket.emit('buzzer-timed-out');
       }
-      timestamps = [0, 0, 0];
+      setTimeout(resetTimestamps, 300);
     }
   }
+
+  socket.on('question-answered', (msg) => {
+    socket.broadcast.emit('answered', {'answer': msg.answer,
+                                      'pv': msg.pv,
+                                      'currPlr': currPlayerID});
+  });
 
   function setCurrentPlayer(ID)
   {
@@ -203,6 +216,7 @@ io.on('connection', (socket) => {
     {
       if (ID == key)
       {
+        currPlayerID = ID;
         socket.to(value).emit('set-currentPlayer', {'currPlr': ID});
       }
       else
@@ -211,6 +225,16 @@ io.on('connection', (socket) => {
       }
     }
   }
+
+  socket.on('let-currPlr-spin', () => {
+    for(let [key, value] of userSocketIdMap)
+    {
+      if (currPlayerID == key)
+      {
+        socket.to(value).emit('let-spin');
+      }
+    }
+  })
 
   socket.on('update-ui', (msg) => {
     console.log('recv update-ui msg from: ', socket.id);
