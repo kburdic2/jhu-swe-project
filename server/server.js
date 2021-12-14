@@ -168,6 +168,7 @@ io.on('connection', (socket) => {
   function resetTimestamps()
   {
     timestamps = [0, 0, 0];
+    setCurrPlr = false;
   }
 
   function waitForTimestamps()
@@ -194,13 +195,14 @@ io.on('connection', (socket) => {
       console.log(shortestTime);
       if (shortestTime != 9999999999)
       {
+        console.log(shortestTimePlayerID);
         setCurrentPlayer(shortestTimePlayerID);
       }
       else
       {
         socket.emit('buzzer-timed-out');
       }
-      setTimeout(resetTimestamps, 300);
+      setTimeout(resetTimestamps, 5000);
     }
   }
 
@@ -212,16 +214,19 @@ io.on('connection', (socket) => {
 
   function setCurrentPlayer(ID)
   {
+    console.log(userSocketIdMap);
+    console.log(ID);
     for(let [key, value] of userSocketIdMap)
     {
       if (ID == key)
       {
         currPlayerID = ID;
         socket.to(value).emit('set-currentPlayer', {'currPlr': ID});
+        
       }
       else
       {
-        socket.to(value).emit('set-not-currentPlayer', {'currPlr': ID});
+        socket.to(value).emit('set-not-currentPlayer', {'currPlr': ID, 'myID': key});
       }
     }
   }

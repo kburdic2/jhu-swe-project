@@ -50,7 +50,6 @@
       <div class="categoryDisplay" id="categoryDisplay"></div>
     </div>
     <div id="pointValueScreen">
-      <div class="PVChoiceLabel" id="PVChoiceLabel"><b>Select a point value</b></div>
       <img class="PVButton1" id="PVButton1" src="assets/UnusedPointValueButton.png"/>
       <div class="PVLabel1" id="PVLabel1"><b>10</b></div>
       <img class="PVButton2" id="PVButton2" src="assets/UnusedPointValueButton.png"/>
@@ -173,6 +172,8 @@
     var category;
     var correctAnswer;
     var questionAnswered = false;
+    var isCurrPlr = false;
+    var myID = 1;
 
     // Timer Lengths
     const PVtimerLength = "3";
@@ -953,6 +954,10 @@
 
 
   socket.on('set-currentPlayer', (data) => {
+    console.log("Got currPlr msg");
+    isCurrPlr = true;
+    myID = data.currPlr;
+    buzzedIn = false;
     setCurrentPlayer(data.currPlr);
     buzzInScreen.style.visibility = 'hidden';
     answerScreen.style.visibility = 'visible';
@@ -961,7 +966,8 @@
 
     qBank[category][0][(pointValue/10)-1] = false;
 
-    numQuestions = numQuestions - 1;
+    numQuestions = numQuestions - 0.5;
+    console.log("SET CURR PLR DECREMENT");
 
     sleep(1000);
 
@@ -989,28 +995,33 @@
   })
 
   socket.on('set-not-currentPlayer', (data) => {
+    isCurrPlr = false;
+    myID = data.myID;
     setCurrentPlayer(data.currPlr);
+    buzzedIn = false;
     buzzInScreen.style.visibility = 'hidden';
     answerScreen.style.visibility = 'visible';
+    document.getElementById('PVChoiceLabel').style.visibility = "hidden";
     spinScreen.style.visibility = 'hidden';
     answerTimer.style.visibility = 'visible';
 
     qBank[category][0][(pointValue/10)-1] = false;
 
-    numQuestions = numQuestions - 1;
+    numQuestions = numQuestions - 0.5;
+    console.log("SET *NOT* CURR PLR DECREMENT");
 
     sleep(1000);
 
     questionAnswered = false;
 
-    // Enable answer buttons
+    // Disable answer buttons
     for (var i = 1; i < 5; i++)
     {
       var currAnswer = document.getElementById("answer"+i+"Button");
       currAnswer.style.cursor = "default";
     }
 
-    // Enable PV buttons
+    // Disable PV buttons
     for (var i = 1; i <= 5; i++)
     {
       var currPVButton = document.getElementById("PVButton"+i);
@@ -1042,6 +1053,7 @@
     answerDisplay.innerHTML = answerDisplay.innerHTML.bold();
 
     // Decrement questions
+    console.log("BUZZER TIMER DECREMENT");
     numQuestions = numQuestions - 1;
     questionsLeftNumber.innerHTML = "<b>"+numQuestions+"</b>";
 
@@ -1079,7 +1091,6 @@
       var currLabel = document.getElementById("PVLabel"+i);
       currLabel.style.cursor = "default";
     }
-    document.getElementById('PVChoiceLabel').style.visibility = "hidden";
 
     for (var i = 1; i <= 5; i++)
       {
@@ -1463,7 +1474,6 @@
       // TODO 17: currentPlayer client to server: emit ang, angVel
       // server: on other clients set them
       socket.emit('spin-wheel', {'angVel': angVel});
-
     });
 
     //----------Point Value Buttons----------//
@@ -1626,7 +1636,7 @@
             currAnswer.style.cursor = "default";
           }
 
-          var playerIndex = 1;
+          var playerIndex = myID;
           setTimeout(addPoints, 100, playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
         }
         else
@@ -1634,7 +1644,7 @@
           awwAudio.currentTime = 0.5;
           if (!muted) awwAudio.play();
           answer1Button.src = "assets/IncorrectAnswerButton.png";
-          var playerIndex = 1;
+          var playerIndex = myID;
           subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
           // Display correct answer and disable answer buttons
           for (var i = 1; i < 5; i++)
@@ -1692,7 +1702,7 @@
             currAnswer.style.cursor = "default";
           }
           
-          var playerIndex = 1;
+          var playerIndex = myID;
           addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
         }
         else
@@ -1700,7 +1710,7 @@
           awwAudio.currentTime = 0.5;
           if (!muted) awwAudio.play();
           answer2Button.src = "assets/IncorrectAnswerButton.png";
-          var playerIndex = 1;
+          var playerIndex = myID;
           subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
           // Display correct answer and disable answer buttons
           for (var i = 1; i < 5; i++)
@@ -1757,7 +1767,7 @@
             currAnswer.style.cursor = "default";
           }
           
-          var playerIndex = 1;
+          var playerIndex = myID;
           addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
         }
         else
@@ -1765,7 +1775,7 @@
           awwAudio.currentTime = 0.5;
           if (!muted) awwAudio.play();
           answer3Button.src = "assets/IncorrectAnswerButton.png";
-          var playerIndex = 1;
+          var playerIndex = myID;
           subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
           // Display correct answer and disable answer buttons
           for (var i = 1; i < 5; i++)
@@ -1822,7 +1832,7 @@
             currAnswer.style.cursor = "default";
           }
           
-          var playerIndex = 1;
+          var playerIndex = myID;
           addPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
         }
         else
@@ -1830,7 +1840,7 @@
           awwAudio.currentTime = 0.5;
           if (!muted) awwAudio.play();
           answer4Button.src = "assets/IncorrectAnswerButton.png";
-          var playerIndex = 1;
+          var playerIndex = myID;
           subtractPoints(playerIndex, parseInt(document.getElementById("player"+playerIndex+"Points").textContent));
           // Display correct answer and disable answer buttons
           for (var i = 1; i < 5; i++)
