@@ -202,7 +202,7 @@ io.on('connection', (socket) => {
       {
         socket.emit('buzzer-timed-out');
       }
-      setTimeout(resetTimestamps, 5000);
+      setTimeout(resetTimestamps, 12000);
     }
   }
 
@@ -222,7 +222,6 @@ io.on('connection', (socket) => {
       {
         currPlayerID = ID;
         socket.to(value).emit('set-currentPlayer', {'currPlr': ID});
-        
       }
       else
       {

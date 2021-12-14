@@ -1154,52 +1154,55 @@
   socket.on('player-info', (data) => {
     console.log("Received msg");
     console.log(data);
-    for (let i = 1; i <= 3; i++)
+    if (connectScreen.style.visibility == "hidden")
     {
+      for (let i = 1; i <= 3; i++)
+      {
 
-      if (data.player1_ID == -1)
-      {
-        player1_Name.style.visibility = "hidden";
-        player1_Icon.style.visibility = "hidden";
-        player1Points.style.visibility = "hidden";
-      }
-      else
-      {
-        player1_Name.style.visibility = "visible";
-        player1_Icon.style.visibility = "visible";
-        player1Points.style.visibility = "visible";
-        player1Points.innerText = "0";
-        player1_Name.innerText = data.Name1;
-      }
+        if (data.player1_ID == -1)
+        {
+          player1_Name.style.visibility = "hidden";
+          player1_Icon.style.visibility = "hidden";
+          player1Points.style.visibility = "hidden";
+        }
+        else
+        {
+          player1_Name.style.visibility = "visible";
+          player1_Icon.style.visibility = "visible";
+          player1Points.style.visibility = "visible";
+          player1Points.innerText = "0";
+          player1_Name.innerText = data.Name1;
+        }
 
-      if (data.player2_ID == -1)
-      {
-        player2_Name.style.visibility = "hidden";
-        player2_Icon.style.visibility = "hidden";
-        player2Points.style.visibility = "hidden";
-      }
-      else
-      {
-        player2_Name.style.visibility = "visible";
-        player2_Icon.style.visibility = "visible";
-        player2Points.style.visibility = "visible";
-        player2Points.innerText = "0";
-        player2_Name.innerText = data.Name2;
-      }
+        if (data.player2_ID == -1)
+        {
+          player2_Name.style.visibility = "hidden";
+          player2_Icon.style.visibility = "hidden";
+          player2Points.style.visibility = "hidden";
+        }
+        else
+        {
+          player2_Name.style.visibility = "visible";
+          player2_Icon.style.visibility = "visible";
+          player2Points.style.visibility = "visible";
+          player2Points.innerText = "0";
+          player2_Name.innerText = data.Name2;
+        }
 
-      if (data.player3_ID == -1)
-      {
-        player3_Name.style.visibility = "hidden";
-        player3_Icon.style.visibility = "hidden";
-        player3Points.style.visibility = "hidden";
-      }
-      else
-      {
-        player3_Name.style.visibility = "visible";
-        player3_Icon.style.visibility = "visible";
-        player3Points.style.visibility = "visible";
-        player3Points.innerText = "0";
-        player3_Name.innerText = data.Name3;
+        if (data.player3_ID == -1)
+        {
+          player3_Name.style.visibility = "hidden";
+          player3_Icon.style.visibility = "hidden";
+          player3Points.style.visibility = "hidden";
+        }
+        else
+        {
+          player3_Name.style.visibility = "visible";
+          player3_Icon.style.visibility = "visible";
+          player3Points.style.visibility = "visible";
+          player3Points.innerText = "0";
+          player3_Name.innerText = data.Name3;
+        }
       }
     }
   })
